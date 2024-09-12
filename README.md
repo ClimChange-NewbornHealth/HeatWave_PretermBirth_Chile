@@ -21,3 +21,4 @@
 :mailbox_with_mail: Álvaro González-Reyes (<alvaro.gonzalez@uach.cl>) - **Principal Researcher**
 
 :mailbox_with_mail: José Daniel Conejeros (<jdconejeros@uc.cl>) - **Research Assistant**
+
