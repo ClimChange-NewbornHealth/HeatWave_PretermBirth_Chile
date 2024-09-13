@@ -317,9 +317,9 @@ births <- births %>%
   arrange(id, week_gest_num) %>% 
   ungroup() 
 e <- now()
-e-s # Timer 6.4 sec
+e-s # Timer 1.036888 hours
 
 ### 9.  Save new births data ----
 glimpse(births)
-save(births, file=paste0(data_out, "births_1992_2020", ".RData"))
+save(births, file=paste0(data_out, "births_1992_2020_weeks", ".RData"))
 
