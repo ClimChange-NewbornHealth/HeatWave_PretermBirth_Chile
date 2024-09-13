@@ -16,3 +16,4 @@ file <- ""
 # Open data in R
 load(paste0(data_inp, file)) 
 
+# PREGUNTAR: NOVIEMBRE A ENERO, NACIDOS o que tuvieron su período gestacional o cual criterio? 

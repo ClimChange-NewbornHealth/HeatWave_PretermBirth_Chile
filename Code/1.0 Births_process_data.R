@@ -100,6 +100,9 @@ births <- births %>%
     educ_dad=if_else(nivel_padre==9, NA_real_, nivel_padre),
     job_dad=if_else(activ_padre %in% c(3,9), NA_real_, activ_padre+1)
     ) %>%
+  filter(age_mom>=13 & age_mom<=50) %>%  # -238
+  filter(weeks >= 28) %>% # - 11644
+  filter(tipo_parto==1) %>% # 54916
   mutate(
     sex=factor(sexo, levels=c(1,2,9), labels=c("Boy", "Girl", "Unknown"))
   ) %>%
@@ -181,12 +184,12 @@ births <- births %>%
          date_nac, day_nac, month_nac, year_nac, 
          date_week1, year_week1, month_week1, ym_week1,
          date_start_week_gest, date_ends_week_gest,
-         sex, tbw, size,
+         sex, tbw, size, 
          age_group_mom,educ_group_mom,job_group_mom,
          age_group_dad,educ_group_dad,job_group_dad,
-         )
+         ) 
 
-### 5. Outcome: preterm (2892471) ---- 
+### 6. Outcome: preterm (2,656,767) ---- 
 births <- births %>% 
   mutate(birth_preterm = if_else(weeks < 37, 1, 0)) %>% 
   mutate(birth_early = if_else(weeks >= 37 & weeks <=38, 1, 0)) %>% 
@@ -194,20 +197,20 @@ births <- births %>%
   mutate(birth_very_preterm = if_else(weeks >= 28 & weeks <32, 1, 0)) %>% 
   mutate(birth_moderate_preterm = if_else(weeks >= 32 & weeks <37, 1, 0))
 
-### 6. Exclusion criteria  -----
+### 7. Exclusion criteria  -----
 
 # USA criteria: Alexander G, Himes J, Kaufaman R, Mor J, Kogan M. A United States national reference for fetal growth. Obstet Gynecol. 1996;87(2). 
 
 missing <- births %>%
   mutate(
     test = case_when(
-      weeks == 20 ~ tbw >= 125 & tbw <= 1250,
-      weeks == 22 ~ tbw >= 125 & tbw <= 1375,
-      weeks == 23 ~ tbw >= 125 & tbw <= 1500,
-      weeks == 24 ~ tbw >= 125 & tbw <= 1625,
-      weeks == 25 ~ tbw >= 250 & tbw <= 1750,
-      weeks == 26 ~ tbw >= 250 & tbw <= 2000,
-      weeks == 27 ~ tbw >= 250 & tbw <= 2250,
+      # weeks == 20 ~ tbw >= 125 & tbw <= 1250,
+      # weeks == 22 ~ tbw >= 125 & tbw <= 1375,
+      # weeks == 23 ~ tbw >= 125 & tbw <= 1500,
+      # weeks == 24 ~ tbw >= 125 & tbw <= 1625,
+      # weeks == 25 ~ tbw >= 250 & tbw <= 1750,
+      # weeks == 26 ~ tbw >= 250 & tbw <= 2000,
+      # weeks == 27 ~ tbw >= 250 & tbw <= 2250,
       weeks == 28 ~ tbw >= 250 & tbw <= 2500,
       weeks == 29 ~ tbw >= 250 & tbw <= 2750,
       weeks == 30 ~ tbw >= 375 & tbw <= 3000,
@@ -228,7 +231,7 @@ missing <- births %>%
   ungroup()
 
 # Total missing: 
-sum(missing$loss_data) # 1552
+sum(missing$loss_data) # 718
 
 write.xlsx(missing, "Data/Output/Data_exclussion_weeks_tbw-USA.xlsx")
 
@@ -248,12 +251,12 @@ missing2 <- births %>%
   ungroup()
 
 # Total missing: 
-sum(missing2$loss_data) # 27967
+sum(missing2$loss_data) # 25981
 
 write.xlsx(missing2, "Data/Output/Data_exclussion_weeks_tbw-1percent.xlsx")
 
 # Apply USA criteria 
-# Init sample 2,892,471
+# Init sample 2,656,767
 births <- births %>%
   filter(
     case_when(
@@ -278,7 +281,7 @@ births <- births %>%
       TRUE ~ FALSE  
     )
   )
-# End sample 2,890,674 - 1797 -> ¿245?
+# End sample  2,656,767 - 2,655,884 -> 883
 length(unique(births$id))
 
 ### 7. Fixed cohort bias  -----
@@ -286,9 +289,9 @@ length(unique(births$id))
 # Floor and ceiling
 # Preguntar esto!!!!!!!!!!!! Si tenemos olas de calor desde el 80, será necesario remover estos casos
 births <- births %>% 
-  filter(year_week1>=1992) # Loss 79400
+  filter(year_week1>=1992) # Loss 77980
 
-length(unique(births$id)) # 2,811,274
+length(unique(births$id)) # 2,657,904
 # Ceiling date_ends_week_gest 2020-12-31 
 
 dates <- births %>% 
@@ -317,7 +320,7 @@ births <- births %>%
   arrange(id, week_gest_num) %>% 
   ungroup() 
 e <- now()
-e-s # Timer 1.036888 hours
+e-s # Timer 49 min 
 
 ### 9.  Save new births data ----
 glimpse(births)
