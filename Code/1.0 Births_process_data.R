@@ -320,5 +320,6 @@ e <- now()
 e-s # Timer 6.4 sec
 
 ### 9.  Save new births data ----
-save(births, file=paste0(data_out, "births_process_1992_2020", ".RData"))
+glimpse(births)
+save(births, file=paste0(data_out, "births_1992_2020", ".RData"))
 
