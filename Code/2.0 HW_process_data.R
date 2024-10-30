@@ -9,136 +9,140 @@ source("Code/0.2 Settings.R")
 data_inp <- "Data/Input/HW/"
 data_out <- "Data/Output/"
 
-# ID file load
-tmax <- rio::import(paste0(data_inp, "CR2MET_tmax_v2.5_day_COM_TS_1980_2021.csv"))
-
 ## Temp data ---- 
 
-# Open data in R
-tx <- rio::import((paste0(data_inp, file1))) # 1979 ->>
+tmax <- rio::import(paste0(data_inp, "CR2MET_tmax_v2.5_day_COM_TS_1980_2021.csv"))
 
 # Adjust long data and time
-tx <- tx %>% pivot_longer(
-  cols = !fechas, 
-  names_to = "nombre_comuna",
-  values_to="temp_mean" 
-) %>% filter(fechas>="1990-01-01")
+metadata <- tmax[1:4, 4:ncol(tmax)] %>%
+  t() %>%
+  as.data.frame() %>%
+  rename(com = `1`, lat = `2`, long = `3`, sup = `4`) 
 
-glimpse(tx)
+temp <-  tmax[-(2:4), ] %>% 
+  row_to_names(row_number = 1) %>% 
+  clean_names() %>% 
+  rename("year"="x9999", 
+         "month"="x9999_2",
+         "day"="x9999_3") %>% 
+  pivot_longer(cols = starts_with("x"), 
+               names_to = "com", 
+               values_to = "tmax") %>% 
+  mutate(com=str_remove(com, "x"),
+         com=as.numeric(com))
 
-# Missing values
-tx <- tx %>% 
-  mutate(year=year(fechas))
+tmax <- temp %>% 
+  left_join(metadata, by="com") %>% 
+  filter(com >= 13000 & com < 14000) # 52 com ids
 
-missing_summary <- tx %>%
-  group_by(nombre_comuna, year) %>%
-  summarise(
-    n_missing = sum(is.na(temp_mean)),
-    total = n(),
-    pct_missing = (n_missing / total) * 100
-  ) %>% 
-  ungroup()
+tmax <- tmax %>%
+    mutate(
+      date = as.Date(paste(year, month, day, sep = "-")),
+      year_month = format(date, "%m-%Y")
+    )
 
-writexl::write_xlsx(missing_summary, "Data/Output/missing_temp.xlsx")
-
-unique(tx$nombre_comuna[is.na(tx$temp_mean)])
-unique(tx$year[is.na(tx$temp_mean)])
+glimpse(tmax)
 
 # Add regional codes 
 com <- chilemapas::codigos_territoriales |> 
   mutate(nombre_comuna=stringr::str_to_title(nombre_comuna)) %>% 
-  filter(codigo_region==13) %>% 
-  select(1:4)
+  filter(codigo_region==13) %>%
+  select(1:2) %>% 
+  mutate(codigo_comuna=as.numeric(codigo_comuna)) %>% 
+  rename(name_com="nombre_comuna")
 
-test_com <- unique(tx$nombre_comuna)
-name_com <- com$nombre_comuna
+tmax <- tmax %>% 
+  left_join(com, by=c("com"="codigo_comuna"))
 
-setdiff(test_com, name_com)
-setdiff(name_com, test_com)
+tmax <- tmax %>% 
+  relocate(com, name_com, lat, long, sup, date, year_month)
 
-# Homologar los nombres es juntar todo en uno solo. 
+rm(metadata, temp, com)
 
 ## HW data ---- 
-# Apply definition
 
+# Compare tempeture # 1980-01-01 - 2021-12-31
+summary(tmax)
 
-# Función para detectar olas de calor (preliminar)
-detectar_olas_calor <- function(data, temp_col, fecha_col, percentil90, percentil95) {
-  # Ordenar los datos por fecha
-  data <- data %>% arrange(!!sym(fecha_col))
+ref_tmax <- tmax %>% 
+  group_by(com) %>% 
+  summarise(t30=30,
+            p90=quantile(tmax, probs = 0.90, digits = 2),
+            p95=quantile(tmax, probs = 0.95, digits = 2),
+            p99=quantile(tmax, probs = 0.99, digits = 2)) %>% 
+  ungroup()
+
+# Join both tables
+tmax <- tmax %>% 
+  left_join(ref_tmax, by="com")
+
+# Apply HW definition -----
+detect_HW <- function(data){
+# Ordenar los datos por fecha para asegurar la secuencia
+data <- data %>% arrange(date)
   
-  # Crear variables booleanas para cada criterio
-  data <- data %>%
-    mutate(
-      ola_calor_30C = ifelse(!!sym(temp_col) > 30, 1, 0),
-      ola_calor_P90 = ifelse(!!sym(temp_col) > percentil90, 1, 0),
-      ola_calor_P95 = ifelse(!!sym(temp_col) > percentil95, 1, 0)
-    )
+# Crear columnas para cada criterio de ola de calor con tres días consecutivos
+data <- data %>%
+  mutate(
+    # Day with tmax > ref
+    HW_day_30C = as.integer(tmax > t30),
+    HW_day_p90 = as.integer(tmax > p90),
+    HW_day_p95 = as.integer(tmax > p95),
+    HW_day_p99 = as.integer(tmax > p99),
+    
+    # 3 days HW consecutive with run length encoding (RLE)
+    HW_30C = +(lag(HW_day_30C, 2) + lag(HW_day_30C, 1) + HW_day_30C >= 3),
+    HW_p90 = +(lag(HW_day_p90, 2) + lag(HW_day_p90, 1) + HW_day_p90 >= 3),
+    HW_p95 = +(lag(HW_day_p95, 2) + lag(HW_day_p95, 1) + HW_day_p95 >= 3),
+    HW_p99 = +(lag(HW_day_p99, 2) + lag(HW_day_p99, 1) + HW_day_p99 >= 3)
+  ) %>%
   
-  # Función auxiliar para detectar 3 días consecutivos de ola de calor
-  detectar_consecutivos <- function(vector) {
-    rle_result <- rle(vector)
-    olas_calor <- rep(0, length(vector))
-    for (i in seq_along(rle_result$lengths)) {
-      if (rle_result$lengths[i] >= 3 & rle_result$values[i] == 1) {
-        olas_calor[seq(sum(rle_result$lengths[1:(i-1)]) + 1, sum(rle_result$lengths[1:i]))] <- 1
-      }
-    }
-    return(olas_calor)
+  # NA with begin serie
+  mutate(across(contains("HW_"), ~replace_na(., 0)))
+
+return(data)
+
+}
+
+hw_data <- detect_HW(tmax)
+summary(hw_data)
+
+# Apply EHF definition -----
+
+# Funtion to estimate EHIsigi, EHIaccli and EHF with p95 by com 
+EHF <- function(data, temp_col, date_col, p95_col, period_days = 30) {
+  
+  # Verificar si las columnas existen en el conjunto de datos
+  required_cols <- c(temp_col, date_col, p95_col)
+  if (!all(required_cols %in% colnames(data))) {
+    stop("Error: Una o más columnas especificadas no existen en los datos.")
   }
   
-  # Aplicar la función de consecutivos a cada criterio
+  # Ordenar los datos por fecha para asegurar la secuencia
+  data <- data %>% arrange(.data[[date_col]])
+  
+  # Calcular EHIsigi, EHIaccli y EHF en un solo paso
   data <- data %>%
     mutate(
-      ola_calor_30C_consecutiva = detectar_consecutivos(ola_calor_30C),
-      ola_calor_P90_consecutiva = detectar_consecutivos(ola_calor_P90),
-      ola_calor_P95_consecutiva = detectar_consecutivos(ola_calor_P95)
+      # EHIsigi: promedio de los últimos tres días menos el percentil 95 de cada fila
+      EHIsigi = (lag(.data[[temp_col]], 0) + lag(.data[[temp_col]], 1) + lag(.data[[temp_col]], 2)) / 3 - .data[[p95_col]],
+      
+      # EHIaccli: promedio de los últimos tres días menos el promedio de los 30 días anteriores
+      EHIaccli = (lag(.data[[temp_col]], 0) + lag(.data[[temp_col]], 1) + lag(.data[[temp_col]], 2)) / 3 - 
+                 rollmean(.data[[temp_col]], period_days, align = "right", fill = NA),
+      
+      # EHF: producto de EHIsigi y el máximo entre 1 y EHIaccli
+      EHF = EHIsigi * pmax(1, EHIaccli)
     )
   
   return(data)
 }
 
-# Ejemplo de uso
-# Asumiendo que tienes un dataframe 'datos_clima' con una columna 'temp_max' y 'fecha'
-# Y que ya has calculado los percentiles 90 y 95 para la temperatura máxima (por ejemplo, 32°C y 34°C)
-percentil90 <- 32
-percentil95 <- 34
+hw_data <- EHF(hw_data, "tmax", "date", "p95")
 
-resultado <- detectar_olas_calor(datos_clima, "temp_max", "fecha", percentil90, percentil95)
+hw_data <- hw_data %>% 
+  mutate(HW_EHF=if_else(EHF > 0, 1, 0))
 
-# Visualizar el resultado
-head(resultado)
+summary(hw_data)
 
-
-# Función para calcular el EHF
-calcular_ehf <- function(data, temp_col, fecha_col, percentil95, period_days = 30) {
-  
-  # Ordenar los datos por fecha
-  data <- data %>% arrange(!!sym(fecha_col))
-  
-  # Calcular el EHIsigi
-  data <- data %>%
-    mutate(
-      EHIsigi = (lag(!!sym(temp_col), 0) + lag(!!sym(temp_col), 1) + lag(!!sym(temp_col), 2)) / 3 - percentil95
-    )
-  
-  # Calcular el EHIaccli
-  data <- data %>%
-    mutate(
-      EHIaccli = (lag(!!sym(temp_col), 0) + lag(!!sym(temp_col), 1) + lag(!!sym(temp_col), 2)) / 3 -
-                 rollmean(!!sym(temp_col), period_days, align = "right", fill = NA)
-    )
-  
-  # Calcular el EHF
-  data <- data %>%
-    mutate(
-      EHF = EHIsigi * pmax(1, EHIaccli),
-      ola_calor = ifelse(EHF > 0, 1, 0)
-    )
-  
-  return(data)
-}
-
-
-
-
+save(hw_data, file=paste0(data_out, "hw_data_1980_2021", ".RData"))

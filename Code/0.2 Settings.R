@@ -62,5 +62,6 @@ install_load(c("rio",
                "mvmeta",
                "ncdf4",
                "tidync", 
-               "rix" # Reproducible environments and package
+               "rix", # Reproducible environments and package
+               "tictoc"
                ))
