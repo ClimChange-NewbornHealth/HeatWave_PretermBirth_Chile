@@ -11,20 +11,19 @@ data_out <- "Data/Output/"
 
 ## Data ---- 
 
+# HW 
 hw_data <- rio::import(paste0(data_out, "hw_data_1980_2021", ".RData"))
 
-bw_data <- rio::import(paste0(data_out, "births_1992_2020_weeks", ".RData"))
+# BW
+bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month", ".RData"))
+bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week", ".RData"))
 
 ## Join test ---- 
 
-ids <- sample(bw_data$id, 100000)
+ids <- sample(bw_data_lw$id, 100000)
 
-data_test <- bw_data %>%
+data_test <- bw_data_lw %>%
   filter(id %in% ids)
-
-rm(bw_data)
-
-resp <- data_test
 
 # Optimize with data.table
 setDT(data_test)
@@ -60,5 +59,13 @@ result_data <- foverlaps(hw_data, data_test, type = "any", nomatch = 0) %>%
     HW_EHF_count = sum(HW_EHF, na.rm = TRUE)
   ), by = .(name_com, id,  date_start_week, date_end_week)]
 
-toc() # Time by 100000 obs: 84.729 sec elapsed 1.4 min
-beepr::beep(8)
+toc() # Time by 100000 obs: 2.142 sec elapsed 1.4 min
+#beepr::beep(8)
+
+# Estimaciones 
+((713461/100000)*0.234)
+(((713461/100000)*0.234))*4
+
+# Save data
+save(bw_data_lm, file=paste0(data_out, "births_1992_2020_last_month_hw", ".RData"))
+save(bw_data_lw, file=paste0(data_out, "births_1992_2020_last_week_hw", ".RData"))

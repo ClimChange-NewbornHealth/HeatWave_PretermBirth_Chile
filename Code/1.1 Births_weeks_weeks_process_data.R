@@ -144,6 +144,3 @@ births_last_week <- births %>%
 
 save(births_last_week, file=paste0(data_out, "births_1992_2020_last_week", ".RData"))
 
-## Columnas por últimas 4 semanas. 
-
-# Interpolación y krigging 
