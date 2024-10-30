@@ -4,9 +4,13 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # data files 
+*/old
 /Data
+/Docs
+/Output
 .DS_Store
 .vscode
+
 
 # User-specific files
 *.rsuser
