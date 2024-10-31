@@ -16,3 +16,5 @@ bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month_hw", ".R
 bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RData"))
 
 ## Descriptive analysis ---- 
+glimpse(bw_data_lm)
+glimpse(bw_data_lw)
