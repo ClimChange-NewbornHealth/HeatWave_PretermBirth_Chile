@@ -79,7 +79,7 @@ tmax <- tmax %>%
 # Apply HW definition -----
 detect_HW <- function(data){
 # Ordenar los datos por fecha para asegurar la secuencia
-data <- data %>% arrange(date)
+  data <- data %>% arrange(date)
   
 # Crear columnas para cada criterio de ola de calor con tres días consecutivos
 data <- data %>%
@@ -90,17 +90,30 @@ data <- data %>%
     HW_day_p95 = as.integer(tmax > p95),
     HW_day_p99 = as.integer(tmax > p99),
     
+    # 2 days HW consecutive with run length encoding (RLE)
+    HW_30C_2d = +(lag(HW_day_30C, 1) + HW_day_30C >= 2),
+    HW_p90_2d = +(lag(HW_day_p90, 1) + HW_day_p90 >= 2),
+    HW_p95_2d = +(lag(HW_day_p95, 1) + HW_day_p95 >= 2),
+    HW_p99_2d = +(lag(HW_day_p99, 1) + HW_day_p99 >= 2),
+
     # 3 days HW consecutive with run length encoding (RLE)
-    HW_30C = +(lag(HW_day_30C, 2) + lag(HW_day_30C, 1) + HW_day_30C >= 3),
-    HW_p90 = +(lag(HW_day_p90, 2) + lag(HW_day_p90, 1) + HW_day_p90 >= 3),
-    HW_p95 = +(lag(HW_day_p95, 2) + lag(HW_day_p95, 1) + HW_day_p95 >= 3),
-    HW_p99 = +(lag(HW_day_p99, 2) + lag(HW_day_p99, 1) + HW_day_p99 >= 3)
+    HW_30C_3d = +(lag(HW_day_30C, 2) + lag(HW_day_30C, 1) + HW_day_30C >= 3),
+    HW_p90_3d = +(lag(HW_day_p90, 2) + lag(HW_day_p90, 1) + HW_day_p90 >= 3),
+    HW_p95_3d = +(lag(HW_day_p95, 2) + lag(HW_day_p95, 1) + HW_day_p95 >= 3),
+    HW_p99_3d = +(lag(HW_day_p99, 2) + lag(HW_day_p99, 1) + HW_day_p99 >= 3),
+
+    # 4 days HW consecutive with run length encoding (RLE)
+    HW_30C_4d = +(lag(HW_day_30C, 3) + lag(HW_day_30C, 2) + lag(HW_day_30C, 1) + HW_day_30C >= 4),
+    HW_p90_4d = +(lag(HW_day_p90, 3) + lag(HW_day_p90, 2) + lag(HW_day_p90, 1) + HW_day_p90 >= 4),
+    HW_p95_4d = +(lag(HW_day_p95, 3) + lag(HW_day_p95, 2) + lag(HW_day_p95, 1) + HW_day_p95 >= 4),
+    HW_p99_4d = +(lag(HW_day_p99, 3) + lag(HW_day_p99, 2) + lag(HW_day_p99, 1) + HW_day_p99 >= 4)
   ) %>%
   
   # NA with begin serie
   mutate(across(contains("HW_"), ~replace_na(., 0)))
 
 return(data)
+
 
 }
 
