@@ -1,4 +1,4 @@
-# Code 3: Join Data ----
+# Code 3: Find and join Data ----
 
 rm(list=ls())
 ## Settings ----
@@ -18,54 +18,139 @@ hw_data <- rio::import(paste0(data_out, "hw_data_1980_2021", ".RData"))
 bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month", ".RData"))
 bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week", ".RData"))
 
-## Join test ---- 
+# Adjust BW with urban Santiago
+com <- chilemapas::codigos_territoriales |> 
+  mutate(nombre_comuna=stringr::str_to_title(nombre_comuna)) %>% 
+  filter(codigo_region==13) %>%
+  #select(1:2) %>% 
+  mutate(codigo_comuna=as.numeric(codigo_comuna)) %>% 
+  rename(name_com="nombre_comuna")
 
-ids <- sample(bw_data_lw$id, 100000)
+# 33 COM
+com_suburb <- c(unique(com$codigo_comuna[com$nombre_provincia=="Santiago"]), 13201) # +13201
 
-data_test <- bw_data_lw %>%
-  filter(id %in% ids)
+bw_data_lm <- bw_data_lm %>% filter(com %in% com_suburb )
+bw_data_lw <- bw_data_lw %>% filter(com %in% com_suburb )
+
+## Join Data ---- 
 
 # Optimize with data.table
-setDT(data_test)
+setDT(bw_data_lm)
+setDT(bw_data_lw)
 setDT(hw_data)
 
-# Preparar las tablas para el join por rango
-data_test[, start := date_start_week]
-data_test[, end := date_end_week]
+# Join tables per range
+bw_data_lm[, start := date_start_week]
+bw_data_lm[, end := date_end_week]
 
-# Establecer las fechas como intervalos en `hw_data` para el join
+bw_data_lw[, start := date_start_week]
+bw_data_lw[, end := date_end_week]
+
+# Interval join `hw_data` 
 hw_data[, start := date]
 hw_data[, end := date]
 
 # Seteamos 
 setkey(hw_data, name_com, start, end)
-setkey(data_test, name_com, start, end)
+setkey(bw_data_lm, name_com, start, end)
+setkey(bw_data_lw, name_com, start, end)
 
-# Time estimation 
+# Time estimation bw last month 
 tic()
 
-result_data <- foverlaps(hw_data, data_test, type = "any", nomatch = 0) %>%
+hw_data_lm <- foverlaps(hw_data, bw_data_lm, type = "any", nomatch = 0) %>%
   .[, .(
-    HW_30C_bin = as.integer(any(HW_30C > 0, na.rm = TRUE)),
-    HW_p90_bin = as.integer(any(HW_p90 > 0, na.rm = TRUE)),
-    HW_p95_bin = as.integer(any(HW_p95 > 0, na.rm = TRUE)),
-    HW_p99_bin = as.integer(any(HW_p99 > 0, na.rm = TRUE)),
-    HW_EHF_bin = as.integer(any(HW_EHF > 0, na.rm = TRUE)),
+    HW_30C_2d_bin = as.integer(any(HW_30C_2d > 0, na.rm = TRUE)),
+    HW_p90_2d_bin = as.integer(any(HW_p90_2d > 0, na.rm = TRUE)),
+    HW_p95_2d_bin = as.integer(any(HW_p95_2d > 0, na.rm = TRUE)),
+    HW_p99_2d_bin = as.integer(any(HW_p99_2d > 0, na.rm = TRUE)),
     
-    HW_30C_count = sum(HW_30C, na.rm = TRUE),
-    HW_p90_count = sum(HW_p90, na.rm = TRUE),
-    HW_p95_count = sum(HW_p95, na.rm = TRUE),
-    HW_p99_count = sum(HW_p99, na.rm = TRUE),
+    HW_30C_2d_count = sum(HW_30C_2d, na.rm = TRUE),
+    HW_p90_2d_count = sum(HW_p90_2d, na.rm = TRUE),
+    HW_p95_2d_count = sum(HW_p95_2d, na.rm = TRUE),
+    HW_p99_2d_count = sum(HW_p99_2d, na.rm = TRUE),
+
+    HW_30C_3d_bin = as.integer(any(HW_30C_3d > 0, na.rm = TRUE)),
+    HW_p90_3d_bin = as.integer(any(HW_p90_3d > 0, na.rm = TRUE)),
+    HW_p95_3d_bin = as.integer(any(HW_p95_3d > 0, na.rm = TRUE)),
+    HW_p99_3d_bin = as.integer(any(HW_p99_3d > 0, na.rm = TRUE)),
+    
+    HW_30C_3d_count = sum(HW_30C_3d, na.rm = TRUE),
+    HW_p90_3d_count = sum(HW_p90_3d, na.rm = TRUE),
+    HW_p95_3d_count = sum(HW_p95_3d, na.rm = TRUE),
+    HW_p99_3d_count = sum(HW_p99_3d, na.rm = TRUE),
+
+    HW_30C_4d_bin = as.integer(any(HW_30C_4d > 0, na.rm = TRUE)),
+    HW_p90_4d_bin = as.integer(any(HW_p90_4d > 0, na.rm = TRUE)),
+    HW_p95_4d_bin = as.integer(any(HW_p95_4d > 0, na.rm = TRUE)),
+    HW_p99_4d_bin = as.integer(any(HW_p99_4d > 0, na.rm = TRUE)),
+    
+    HW_30C_4d_count = sum(HW_30C_4d, na.rm = TRUE),
+    HW_p90_4d_count = sum(HW_p90_4d, na.rm = TRUE),
+    HW_p95_4d_count = sum(HW_p95_4d, na.rm = TRUE),
+    HW_p99_4d_count = sum(HW_p99_4d, na.rm = TRUE),
+
+    HW_EHF_bin = as.integer(any(HW_EHF > 0, na.rm = TRUE)),
     HW_EHF_count = sum(HW_EHF, na.rm = TRUE)
+
   ), by = .(name_com, id,  date_start_week, date_end_week)]
 
-toc() # Time by 100000 obs: 2.142 sec elapsed 1.4 min
-#beepr::beep(8)
+toc() # Time: 102.574 sec elapsed 
 
-# Estimaciones 
-((713461/100000)*0.234)
-(((713461/100000)*0.234))*4
+# Time estimation bw last week 
+
+tic()
+
+hw_data_lw <- foverlaps(hw_data, bw_data_lw, type = "any", nomatch = 0) %>%
+  .[, .(
+    HW_30C_2d_bin = as.integer(any(HW_30C_2d > 0, na.rm = TRUE)),
+    HW_p90_2d_bin = as.integer(any(HW_p90_2d > 0, na.rm = TRUE)),
+    HW_p95_2d_bin = as.integer(any(HW_p95_2d > 0, na.rm = TRUE)),
+    HW_p99_2d_bin = as.integer(any(HW_p99_2d > 0, na.rm = TRUE)),
+    
+    HW_30C_2d_count = sum(HW_30C_2d, na.rm = TRUE),
+    HW_p90_2d_count = sum(HW_p90_2d, na.rm = TRUE),
+    HW_p95_2d_count = sum(HW_p95_2d, na.rm = TRUE),
+    HW_p99_2d_count = sum(HW_p99_2d, na.rm = TRUE),
+
+    HW_30C_3d_bin = as.integer(any(HW_30C_3d > 0, na.rm = TRUE)),
+    HW_p90_3d_bin = as.integer(any(HW_p90_3d > 0, na.rm = TRUE)),
+    HW_p95_3d_bin = as.integer(any(HW_p95_3d > 0, na.rm = TRUE)),
+    HW_p99_3d_bin = as.integer(any(HW_p99_3d > 0, na.rm = TRUE)),
+    
+    HW_30C_3d_count = sum(HW_30C_3d, na.rm = TRUE),
+    HW_p90_3d_count = sum(HW_p90_3d, na.rm = TRUE),
+    HW_p95_3d_count = sum(HW_p95_3d, na.rm = TRUE),
+    HW_p99_3d_count = sum(HW_p99_3d, na.rm = TRUE),
+
+    HW_30C_4d_bin = as.integer(any(HW_30C_4d > 0, na.rm = TRUE)),
+    HW_p90_4d_bin = as.integer(any(HW_p90_4d > 0, na.rm = TRUE)),
+    HW_p95_4d_bin = as.integer(any(HW_p95_4d > 0, na.rm = TRUE)),
+    HW_p99_4d_bin = as.integer(any(HW_p99_4d > 0, na.rm = TRUE)),
+    
+    HW_30C_4d_count = sum(HW_30C_4d, na.rm = TRUE),
+    HW_p90_4d_count = sum(HW_p90_4d, na.rm = TRUE),
+    HW_p95_4d_count = sum(HW_p95_4d, na.rm = TRUE),
+    HW_p99_4d_count = sum(HW_p99_4d, na.rm = TRUE),
+
+    HW_EHF_bin = as.integer(any(HW_EHF > 0, na.rm = TRUE)),
+    HW_EHF_count = sum(HW_EHF, na.rm = TRUE)
+
+  ), by = .(name_com, id,  date_start_week, date_end_week)]
+
+toc() # Time 19.446 sec elapsed
+
+# Join data 
+
+bw_data_lm_joined <- bw_data_lm %>%
+  left_join(hw_data_lm, by=c("id", "name_com", "date_start_week", "date_end_week"))
+  
+bw_data_lw_joined <- bw_data_lw %>% 
+  left_join(hw_data_lw, by=c("id", "name_com", "date_start_week", "date_end_week"))
+
+summary(bw_data_lm_joined)
+summary(bw_data_lw_joined)
 
 # Save data
-save(bw_data_lm, file=paste0(data_out, "births_1992_2020_last_month_hw", ".RData"))
-save(bw_data_lw, file=paste0(data_out, "births_1992_2020_last_week_hw", ".RData"))
+save(bw_data_lm_joined, file=paste0(data_out, "births_1992_2020_last_month_hw", ".RData"))
+save(bw_data_lw_joined, file=paste0(data_out, "births_1992_2020_last_week_hw", ".RData"))
