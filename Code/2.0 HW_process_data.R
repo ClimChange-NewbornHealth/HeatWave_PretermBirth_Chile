@@ -72,6 +72,15 @@ ref_tmax <- tmax %>%
             p99=quantile(tmax, probs = 0.99, digits = 2)) %>% 
   ungroup()
 
+table_tmax <- chilemapas::codigos_territoriales |> 
+  mutate(nombre_comuna=stringr::str_to_title(nombre_comuna)) %>% 
+  filter(codigo_region==13) %>%
+  mutate(codigo_comuna=as.numeric(codigo_comuna)) %>% 
+  rename(name_com="nombre_comuna") %>% 
+  left_join(ref_tmax, by=c("codigo_comuna"="com"))
+
+writexl::write_xlsx(table_tmax, "Output/Descriptives/Ref_tmax_com_1980_2021.xlsx")
+
 # Join both tables
 tmax <- tmax %>% 
   left_join(ref_tmax, by="com")
