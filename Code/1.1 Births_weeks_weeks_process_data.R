@@ -123,6 +123,8 @@ save(births, file=paste0(data_out, "births_1992_2020_weeks", ".RData"))
 
 ### 3. Only exposition births  -----
 
+#births <- rio::import(paste0(data_out, "births_1992_2020_weeks", ".RData"))
+
 ## Define the range of time observation
 dates_range <- function(date) {
   any(date >= as.Date(paste0(year(date)-1, "-11-01")) & date <= as.Date(paste0(year(date), "-03-31")))
@@ -132,6 +134,7 @@ dates_range <- function(date) {
 births_last_month <- births %>%
   group_by(id) %>%  
   filter(week_gest_num > (max(week_gest_num) - 4)) %>%  
+  ungroup() %>% 
   filter(dates_range(date_end_week))
 
 save(births_last_month, file=paste0(data_out, "births_1992_2020_last_month", ".RData"))
@@ -140,7 +143,9 @@ save(births_last_month, file=paste0(data_out, "births_1992_2020_last_month", ".R
 births_last_week <- births %>%
   group_by(id) %>%  
   filter(week_gest_num == max(week_gest_num)) %>%  
-  filter(dates_range(date_end_week))
+  ungroup() %>% 
+  mutate(month_end_week=month(date_end_week)) %>% 
+  filter(month_end_week %in% c(11, 12, 1, 2, 3))
 
 save(births_last_week, file=paste0(data_out, "births_1992_2020_last_week", ".RData"))
 

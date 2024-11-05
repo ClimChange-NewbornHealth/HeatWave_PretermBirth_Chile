@@ -63,5 +63,6 @@ install_load(c("rio",
                "ncdf4",
                "tidync", 
                "rix", # Reproducible environments and package
-               "tictoc"
+               "tictoc",
+               "paletteer"
                ))

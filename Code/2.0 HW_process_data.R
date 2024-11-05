@@ -80,6 +80,8 @@ table_tmax <- chilemapas::codigos_territoriales |>
   left_join(ref_tmax, by=c("codigo_comuna"="com")) %>% 
   left_join(dplyr::select(tmax, "com", "lat", "long", "sup"), by=c("codigo_comuna"="com"), multiple="first")
 
+table_tmax <- table_tmax %>% relocate(lat, long, sup, .after=nombre_region)
+
 writexl::write_xlsx(table_tmax, "Output/Descriptives/Ref_tmax_com_1980_2021.xlsx")
 
 # Join both tables
