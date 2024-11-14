@@ -15,6 +15,122 @@ data_out <- "Data/Output/"
 bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RData"))
 bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month_hw", ".RData"))
 
+## Descriptives characteristics -----
+
+bw_data_lmu <- bw_data_lm %>% distinct(id, .keep_all = TRUE)
+
+tab1 <-  bw_data_lw %>% 
+   select(tbw, weeks, sex,  
+          age_group_mom, educ_group_mom, job_group_mom,
+          age_group_dad, educ_group_dad, job_group_dad, 
+          year_nac, month_nac, 
+          name_com,
+          birth_preterm,
+          birth_very_preterm,      
+          birth_moderately_preterm,
+          birth_late_preterm,      
+          birth_term,             
+          birth_posterm,
+          HW_30C_2d_bin,           
+          HW_p90_2d_bin,           
+          HW_p95_2d_bin,           
+          HW_p99_2d_bin,           
+          HW_30C_2d_count,         
+          HW_p90_2d_count,         
+          HW_p95_2d_count,         
+          HW_p99_2d_count,         
+          HW_30C_3d_bin,           
+          HW_p90_3d_bin,           
+          HW_p95_3d_bin,           
+          HW_p99_3d_bin,           
+          HW_30C_3d_count,         
+          HW_p90_3d_count,         
+          HW_p95_3d_count,         
+          HW_p99_3d_count,         
+          HW_30C_4d_bin,           
+          HW_p90_4d_bin,           
+          HW_p95_4d_bin,           
+          HW_p99_4d_bin,           
+          HW_30C_4d_count,         
+          HW_p90_4d_count,         
+          HW_p95_4d_count,         
+          HW_p99_4d_count,         
+          HW_EHF_bin,              
+          HW_EHF_count
+   ) %>% 
+  mutate(year_nac=factor(year_nac)) %>% 
+  mutate(month_nac=factor(month_nac)) %>% 
+   st(,
+   digits = 1, 
+   out="return", 
+   add.median = TRUE,
+   fixed.digits = TRUE, 
+   simple.kable = FALSE,
+   title="",
+   numformat = NA) %>% 
+   data.frame() 
+
+tab2 <-  bw_data_lmu %>% 
+    select(tbw, weeks, sex,  
+           age_group_mom, educ_group_mom, job_group_mom,
+           age_group_dad, educ_group_dad, job_group_dad, 
+           year_nac, month_nac, 
+           name_com,
+           birth_preterm,
+           birth_very_preterm,      
+           birth_moderately_preterm,
+           birth_late_preterm,      
+           birth_term,             
+           birth_posterm,
+           HW_30C_2d_bin,           
+           HW_p90_2d_bin,           
+           HW_p95_2d_bin,           
+           HW_p99_2d_bin,           
+           HW_30C_2d_count,         
+           HW_p90_2d_count,         
+           HW_p95_2d_count,         
+           HW_p99_2d_count,         
+           HW_30C_3d_bin,           
+           HW_p90_3d_bin,           
+           HW_p95_3d_bin,           
+           HW_p99_3d_bin,           
+           HW_30C_3d_count,         
+           HW_p90_3d_count,         
+           HW_p95_3d_count,         
+           HW_p99_3d_count,         
+           HW_30C_4d_bin,           
+           HW_p90_4d_bin,           
+           HW_p95_4d_bin,           
+           HW_p99_4d_bin,           
+           HW_30C_4d_count,         
+           HW_p90_4d_count,         
+           HW_p95_4d_count,         
+           HW_p99_4d_count,         
+           HW_EHF_bin,              
+           HW_EHF_count
+    ) %>% 
+   mutate(year_nac=factor(year_nac)) %>% 
+   mutate(month_nac=factor(month_nac)) %>% 
+    st(,
+    digits = 1, 
+    out="return", 
+    add.median = TRUE,
+    fixed.digits = TRUE, 
+    simple.kable = FALSE,
+    title="",
+    numformat = NA) %>% 
+    data.frame() 
+ 
+ 
+lista_tab <- list(
+    "tab1"=tab1, 
+    "tab2"=tab2 
+ )
+ 
+writexl::write_xlsx(lista_tab, path =  paste0(data_out,  "Descriptives", ".xlsx"))
+ 
+rm(bw_data_lmu)
+
 ## Descriptive analysis ---- 
 glimpse(bw_data_lw)
 
@@ -22,14 +138,160 @@ glimpse(bw_data_lw)
 
 # Preterm across time 
 table <- bw_data_lw %>% 
+  group_by(year_nac, month_nac) %>% 
+    summarise(
+      tasa_vpt=mean(birth_very_preterm, na.rm=TRUE)*100,
+      tasa_mpt=mean(birth_moderately_preterm, na.rm=TRUE)*100,
+      tasa_lpt=mean(birth_late_preterm, na.rm=TRUE)*100,
+      tasa_pt=mean(birth_preterm, na.rm=TRUE)*100,
+      tasa_t=mean(birth_term, na.rm=TRUE)*100,
+      tasa_post=mean(birth_posterm, na.rm=TRUE)*100,
+    ) %>%
+  mutate(
+    summer_year = case_when(
+      month_nac %in% c(11, 12) ~ paste0("Summer-", year_nac),           # Noviembre y Diciembre toman el año actual
+      month_nac %in% c(1, 2, 3) ~ paste0("Summer-", year_nac - 1),       # Enero, Febrero y Marzo toman el año anterior
+      TRUE ~ NA_character_                                           # Otros meses quedan como NA
+    )
+  ) %>% 
+  relocate(summer_year)
+
+table %>% 
+  ggplot(aes(y=tasa_pt, x=factor(month_nac), group = 1)) +
+  geom_line(color="#08519c") +
+  geom_point(color="#08519c", size=0.5) +
+  facet_wrap(~summer_year, ncol = 5, scales="free_x") +
+  #scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
+  labs(y ="Prevalence", x=NULL) +
+  theme_light() +
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.background = element_rect(fill=NA, color="black"), 
+        strip.text=element_text(color="black"),
+        panel.grid = element_blank())
+
+ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_prev_pt", ".png"), # "Preterm_trendsrm1991"
+       res = 300,
+       width = 25,
+       height = 18,
+       units = 'cm',
+       scaling = 0.8,
+       device = ragg::agg_png)
+
+table %>% 
+  ggplot(aes(y=tasa_vpt, x=factor(month_nac), group = 1)) +
+  geom_line(color="#08519c") +
+  geom_point(color="#08519c", size=0.5) +
+  facet_wrap(~summer_year, ncol = 5, scales="free_x") +
+  #scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
+  labs(y ="Prevalence", x=NULL) +
+  theme_light() +
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.background = element_rect(fill=NA, color="black"), 
+        strip.text=element_text(color="black"),
+        panel.grid = element_blank())
+
+ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_prev_vpt", ".png"), # "Preterm_trendsrm1991"
+       res = 300,
+       width = 25,
+       height = 18,
+       units = 'cm',
+       scaling = 0.8,
+       device = ragg::agg_png)
+
+table %>% 
+  ggplot(aes(y=tasa_mpt, x=factor(month_nac), group = 1)) +
+  geom_line(color="#08519c") +
+  geom_point(color="#08519c", size=0.5) +
+  facet_wrap(~summer_year, ncol = 5, scales="free_x") +
+  #scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
+  labs(y ="Prevalence", x=NULL) +
+  theme_light() +
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.background = element_rect(fill=NA, color="black"), 
+        strip.text=element_text(color="black"),
+        panel.grid = element_blank())
+
+ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_prev_mpt", ".png"), # "Preterm_trendsrm1991"
+       res = 300,
+       width = 25,
+       height = 18,
+       units = 'cm',
+       scaling = 0.8,
+       device = ragg::agg_png)
+
+table %>% 
+  ggplot(aes(y=tasa_lpt, x=factor(month_nac), group = 1)) +
+  geom_line(color="#08519c") +
+  geom_point(color="#08519c", size=0.5) +
+  facet_wrap(~summer_year, ncol = 5, scales="free_x") +
+  #scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
+  labs(y ="Prevalence", x=NULL) +
+  theme_light() +
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.background = element_rect(fill=NA, color="black"), 
+        strip.text=element_text(color="black"),
+        panel.grid = element_blank())
+
+ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_prev_lpt", ".png"), # "Preterm_trendsrm1991"
+       res = 300,
+       width = 25,
+       height = 18,
+       units = 'cm',
+       scaling = 0.8,
+       device = ragg::agg_png)
+
+table %>% 
+  ggplot(aes(y=tasa_t, x=factor(month_nac), group = 1)) +
+  geom_line(color="#08519c") +
+  geom_point(color="#08519c", size=0.5) +
+  facet_wrap(~summer_year, ncol = 5, scales="free_x") +
+  #scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
+  labs(y ="Prevalence", x=NULL) +
+  theme_light() +
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.background = element_rect(fill=NA, color="black"), 
+        strip.text=element_text(color="black"),
+        panel.grid = element_blank())
+
+ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_prev_t", ".png"), # "Preterm_trendsrm1991"
+       res = 300,
+       width = 25,
+       height = 18,
+       units = 'cm',
+       scaling = 0.8,
+       device = ragg::agg_png)
+
+table %>% 
+  ggplot(aes(y=tasa_post, x=factor(month_nac), group = 1)) +
+  geom_line(color="#08519c") +
+  geom_point(color="#08519c", size=0.5) +
+  facet_wrap(~summer_year, ncol = 5, scales="free_x") +
+  #scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
+  labs(y ="Prevalence", x=NULL) +
+  theme_light() +
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.background = element_rect(fill=NA, color="black"), 
+        strip.text=element_text(color="black"),
+        panel.grid = element_blank())
+
+ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_prev_post", ".png"), # "Preterm_trendsrm1991"
+       res = 300,
+       width = 25,
+       height = 18,
+       units = 'cm',
+       scaling = 0.8,
+       device = ragg::agg_png)
+
+
+table <- bw_data_lw %>% 
   group_by(year_nac) %>% 
   summarise(
-    tasa_vpt=mean(birth_very_preterm, na.rm=TRUE)*1000,
-    tasa_mpt=mean(birth_moderately_preterm, na.rm=TRUE)*1000,
-    tasa_lpt=mean(birth_late_preterm, na.rm=TRUE)*1000,
-    tasa_pt=mean(birth_preterm, na.rm=TRUE)*1000,
-    tasa_t=mean(birth_term, na.rm=TRUE)*1000,
-    tasa_post=mean(birth_posterm, na.rm=TRUE)*1000,
+    tasa_vpt=mean(birth_very_preterm, na.rm=TRUE)*100,
+    tasa_mpt=mean(birth_moderately_preterm, na.rm=TRUE)*100,
+    tasa_lpt=mean(birth_late_preterm, na.rm=TRUE)*100,
+    tasa_pt=mean(birth_preterm, na.rm=TRUE)*100,
+    tasa_t=mean(birth_term, na.rm=TRUE)*100,
+    tasa_post=mean(birth_posterm, na.rm=TRUE)*100,
   ) %>% 
   pivot_longer(
     cols=!year_nac, 
@@ -73,63 +335,6 @@ ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer", ".
        units = 'cm',
        scaling = 0.90,
        device = ragg::agg_png)
-
-
-table2 <- bw_data_lw %>% 
-    group_by(year_nac) %>% 
-    summarise(
-      tasa_vpt=sum(birth_very_preterm, na.rm=TRUE),
-      tasa_mpt=sum(birth_moderately_preterm, na.rm=TRUE),
-      tasa_lpt=sum(birth_late_preterm, na.rm=TRUE),
-      tasa_pt=sum(birth_preterm, na.rm=TRUE),
-      tasa_t=sum(birth_term, na.rm=TRUE),
-      tasa_post=sum(birth_posterm, na.rm=TRUE)
-    ) %>% 
-    pivot_longer(
-      cols=!year_nac, 
-      names_to="preterm",
-      values_to="prev"
-    ) %>% 
-    mutate(preterm=case_when(
-      preterm=="tasa_vpt" ~ "Very Preterm",
-      preterm=="tasa_mpt" ~ "Moderately Preterm",
-      preterm=="tasa_lpt" ~ "Late Preterm",
-      preterm=="tasa_pt" ~ "Preterm",
-      preterm=="tasa_t" ~  "Term",
-      preterm=="tasa_post" ~ "Post-term"
-    )) %>% 
-    mutate(preterm=factor(preterm, levels=c(
-      "Very Preterm",
-      "Moderately Preterm",
-      "Late Preterm",
-      "Preterm",
-      "Term",
-      "Post-term"
-    )))
-  
-table2 %>% 
-  ggplot(aes(y=prev, x=year_nac, fill = preterm)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_x_continuous(expand = c(0.03, 0.03)) +
-  scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
-  scale_fill_paletteer_d("nationalparkcolors::Acadia") +
-  labs(y ="N", x=NULL, fill=NULL) +
-  theme_light() +
-  theme(legend.position = "top",
-        legend.margin = margin(c(0.05, 0.05, 0.05, 0.05)),
-        legend.title = element_text(size = 9), 
-        panel.grid = element_blank(),
-        plot.title = element_text(size = 10),
-        text = element_text(size = 10))
-
-ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_n", ".png"), # "Preterm_trendsrm1991"
-       res = 300,
-       width = 20,
-       height = 12,
-       units = 'cm',
-       scaling = 0.90,
-       device = ragg::agg_png)
-
 
 ## HW
 
@@ -231,14 +436,12 @@ for (comuna in comunas) {
 }
 
 
-
-
 table_pt <- bw_data_lw %>% 
   mutate(month = month(date_end_week)) %>% 
   mutate(month=factor(month, 
     levels=c(11, 12, 1:4),
     labels=c("November", "December", "January", "February", "March", "April"))) %>% 
-  group_by(month) %>% 
+  group_by(name_com) %>% 
   summarise(
     
     weeks=mean(weeks, na.rm = TRUE),
@@ -288,15 +491,105 @@ table_pt <- bw_data_lw %>%
     HW_p95_4d_count=mean(HW_p95_4d_count, na.rm = TRUE),
     HW_p99_4d_count=mean(HW_p99_4d_count, na.rm = TRUE)
   
-  ) %>% 
-  pivot_longer(
-    cols=-month, 
-    names_to = "variables",
-    values_to = "values"
-  ) %>% 
-  pivot_wider(
-    names_from = "month",
-    values_from = "values"
   )
 
+
+table <- bw_data_lw %>% 
+    group_by(name_com, year_nac, month_nac) %>% 
+      summarise(
+        tasa_vpt=mean(birth_very_preterm, na.rm=TRUE)*100,
+        tasa_mpt=mean(birth_moderately_preterm, na.rm=TRUE)*100,
+        tasa_lpt=mean(birth_late_preterm, na.rm=TRUE)*100,
+        tasa_pt=mean(birth_preterm, na.rm=TRUE)*100,
+        tasa_t=mean(birth_term, na.rm=TRUE)*100,
+        tasa_post=mean(birth_posterm, na.rm=TRUE)*100,
+      ) %>%
+    mutate(
+      summer_year = case_when(
+        month_nac %in% c(11, 12) ~ paste0("Summer-", year_nac),           # Noviembre y Diciembre toman el año actual
+        month_nac %in% c(1, 2, 3) ~ paste0("Summer-", year_nac - 1),       # Enero, Febrero y Marzo toman el año anterior
+        TRUE ~ NA_character_                                           # Otros meses quedan como NA
+      )
+    ) %>% 
+    relocate(summer_year)
+  
+  table %>% 
+    ggplot(aes(y=tasa_pt, x=factor(month_nac), group = 1)) +
+    geom_line(color="#08519c") +
+    geom_point(color="#08519c", size=0.5) +
+    facet_wrap(~summer_year, ncol = 5, scales="free_x") +
+    #scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
+    labs(y ="Prevalence", x=NULL) +
+    theme_light() +
+    theme(plot.title = element_text(hjust = 0.5),
+          strip.background = element_rect(fill=NA, color="black"), 
+          strip.text=element_text(color="black"),
+          panel.grid = element_blank())
+  
+  ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_prev_pt", ".png"), # "Preterm_trendsrm1991"
+         res = 300,
+         width = 25,
+         height = 18,
+         units = 'cm',
+         scaling = 0.8,
+         device = ragg::agg_png)
+  
+
+table <- bw_data_lw %>% 
+  group_by(name_com, year_nac) %>% 
+  summarise(
+    tasa_vpt=mean(birth_very_preterm, na.rm=TRUE)*100,
+    tasa_mpt=mean(birth_moderately_preterm, na.rm=TRUE)*100,
+    tasa_lpt=mean(birth_late_preterm, na.rm=TRUE)*100,
+    tasa_pt=mean(birth_preterm, na.rm=TRUE)*100,
+    tasa_t=mean(birth_term, na.rm=TRUE)*100,
+    tasa_post=mean(birth_posterm, na.rm=TRUE)*100,
+  ) %>% 
+  pivot_longer(
+    cols=!c(year_nac, name_com),
+    names_to="preterm",
+    values_to="prev"
+  ) %>% 
+  mutate(preterm=case_when(
+    preterm=="tasa_vpt" ~ "Very Preterm",
+    preterm=="tasa_mpt" ~ "Moderately Preterm",
+    preterm=="tasa_lpt" ~ "Late Preterm",
+    preterm=="tasa_pt" ~ "Preterm",
+    preterm=="tasa_t" ~  "Term",
+    preterm=="tasa_post" ~ "Post-term"
+  )) %>% 
+  mutate(preterm=factor(preterm, levels=c(
+    "Very Preterm",
+    "Moderately Preterm",
+    "Late Preterm",
+    "Preterm",
+    "Term",
+    "Post-term"
+  )))
+
+table %>% 
+  filter(preterm=="Preterm") %>% 
+  ggplot(aes(y=prev, x=year_nac)) +
+  geom_line(color="#08519c") +
+  geom_smooth(method = "lm", color="red") +
+  geom_point(color="#08519c", size=0.5) +
+  facet_wrap(~name_com, ncol = 4, scales = "free") +
+  scale_x_continuous(breaks = seq(1992, 2020, by=4)) +
+  labs(y ="Prevalence (per 1.000)", x=NULL) +
+  theme_light() +
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.background = element_rect(fill=NA, color="black"), 
+        strip.text=element_text(color="black"),
+        panel.grid = element_blank())
+
+ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends_summer_com", ".png"), # "Preterm_trendsrm1991"
+       res = 300,
+       width = 30,
+       height = 30,
+       units = 'cm',
+       scaling = 0.90,
+       device = ragg::agg_png)
+
+
+writexl::write_xlsx(table_pt, path =  paste0(data_out, "Descriptives/", "Tabla_PT", ".xlsx"))
 
