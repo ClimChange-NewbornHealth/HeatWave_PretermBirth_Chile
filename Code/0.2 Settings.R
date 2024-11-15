@@ -65,5 +65,11 @@ install_load(c("rio",
                "rix", # Reproducible environments and package
                "tictoc",
                "paletteer",
-               "texreg"
+               "texreg",
+               "tidymodels", 
+               "broom",
+               "survival",
+               "flexsurv",
+               "survminer",
+               "ggsurvfit"
                ))
