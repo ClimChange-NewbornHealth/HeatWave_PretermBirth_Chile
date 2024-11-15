@@ -18,6 +18,7 @@ bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RD
 # Adjust data 
 glimpse(bw_data_lw)
 
+
 ## PR COX Models ---- 
 
 dependent_vars <- c("birth_preterm", "birth_very_preterm", "birth_moderately_preterm", 
@@ -52,8 +53,8 @@ fit_cox_model <- function(dependent, predictor) {
 }
 
 # Iterar sobre las combinaciones de dependientes y predictores
-results_list <- map(dependent_vars, function(dep_var) {
-  map(heatwave_vars, function(hw_var) {
+results_list <- map(dependent_vars[1], function(dep_var) {
+  map(heatwave_vars[1], function(hw_var) {
     fit_cox_model(dep_var, hw_var)
   })
 })

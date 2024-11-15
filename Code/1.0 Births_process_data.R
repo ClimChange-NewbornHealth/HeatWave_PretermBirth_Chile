@@ -178,7 +178,7 @@ births <- births %>%
 
 # Edit covariates
 births <- births %>%
-  mutate(sex=factor(sexo, levels=c(1,2,9), labels=c("Boy", "Girl", "Unknown"))) %>%
+  mutate(sex=factor(sexo, levels=c(1,2), labels=c("Boy", "Girl"))) %>%
   left_join(comunas, by=c("comuna"="codigo_comuna")) %>%
   mutate(date_week1 = date_start, 
          year_week1 = year(date_start), 
@@ -201,24 +201,25 @@ births <- births %>%
       age_mom >= 30 & age_mom <= 39 ~ 3,
       age_mom >= 40 & age_mom <= 49 ~ 4,
       age_mom >= 50 ~ 5, 
-      TRUE ~ 6
+      TRUE ~ NA_real_
     ),
     age_group_mom=factor(age_group_mom, 
-                         levels=c(1:6), 
-                         labels=c("<=20", "20-29", "30-39", "40-49", ">=50", "Unknown")),
+                         levels=c(1:5), 
+                         labels=c("<=20", "20-29", "30-39", "40-49", ">=50")),
     educ_group_mom = case_when(
       educ_mom == 1 ~ 4, # College
       educ_mom == 2 ~ 3, # Secondary
       educ_mom == 3 ~ 3, # Secondary
       educ_mom == 4 ~ 2, # Primary
       educ_mom == 5 ~ 1, # No educaction 
-      TRUE ~ 5, #Unknow
+      TRUE ~ NA_real_, #Unknow
     ), 
     educ_group_mom = factor(educ_group_mom, 
-                            levels = c(1:5), 
-                            labels = c("Non education", "Primary", "Secondary", "College", "Unknown")),
-    job_group_mom = if_else(is.na(job_mom), 4, job_mom), 
-    job_group_mom = factor(job_group_mom, levels = c(1,2,3,4), labels=c("Not working", "Employed", "Unemployed", "Unknown"))
+                            levels = c(1:4), 
+                            labels = c("Non education", "Primary", "Secondary", "College")),
+    #job_group_mom = if_else(is.na(job_mom), 4, job_mom), 
+    job_group_mom = if_else(job_mom==3, 1, job_mom),
+    job_group_mom = factor(job_group_mom, levels = c(1,2), labels=c("Not working", "Employed"))
   ) %>%
   relocate(age_group_mom, educ_group_mom, job_group_mom, .after=job_mom) %>%
   mutate(
@@ -244,8 +245,9 @@ births <- births %>%
     educ_group_dad = factor(educ_group_dad, 
                             levels = c(1:5), 
                             labels = c("Non education", "Primary", "Secondary", "College", "Unknown")),
-    job_group_dad = if_else(is.na(job_dad), 4, job_dad), 
-    job_group_dad = factor(job_group_dad, levels = c(1,2,3,4), labels=c("Not working", "Employed", "Unemployed", "Unknown"))
+    job_group_dad = if_else(job_dad==3, 1, job_dad),
+    job_group_dad = if_else(is.na(job_group_dad), 3, job_group_dad), 
+    job_group_dad = factor(job_group_dad, levels = c(1,2,3), labels=c("Not working", "Employed", "Unknown"))
   ) %>%
   relocate(age_group_dad, educ_group_dad, job_group_dad, .after=job_dad) %>% 
   select(id, 
@@ -258,7 +260,7 @@ births <- births %>%
          sex, tbw, size, 
          age_group_mom,educ_group_mom,job_group_mom,
          age_group_dad,educ_group_dad,job_group_dad,
-         ) 
+) 
 
 glimpse(births)
 
