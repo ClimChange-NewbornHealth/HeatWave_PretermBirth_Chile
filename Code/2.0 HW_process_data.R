@@ -67,6 +67,10 @@ summary(tmax)
 ref_tmax <- tmax %>% 
   group_by(com) %>% 
   summarise(t30=30,
+            t31=31,
+            t32=32,
+            t33=33,
+            t34=34,
             p90=quantile(tmax, probs = 0.90, digits = 2),
             p95=quantile(tmax, probs = 0.95, digits = 2),
             p99=quantile(tmax, probs = 0.99, digits = 2)) %>% 
@@ -98,24 +102,40 @@ data <- data %>%
   mutate(
     # Day with tmax > ref
     HW_day_30C = as.integer(tmax > t30),
+    HW_day_31C = as.integer(tmax > t31),
+    HW_day_32C = as.integer(tmax > t32),
+    HW_day_33C = as.integer(tmax > t33),
+    HW_day_34C = as.integer(tmax > t34),
     HW_day_p90 = as.integer(tmax > p90),
     HW_day_p95 = as.integer(tmax > p95),
     HW_day_p99 = as.integer(tmax > p99),
     
     # 2 days HW consecutive with run length encoding (RLE)
     HW_30C_2d = +(lag(HW_day_30C, 1) + HW_day_30C >= 2),
+    HW_31C_2d = +(lag(HW_day_31C, 1) + HW_day_31C >= 2),
+    HW_32C_2d = +(lag(HW_day_32C, 1) + HW_day_32C >= 2),
+    HW_33C_2d = +(lag(HW_day_33C, 1) + HW_day_33C >= 2),
+    HW_34C_2d = +(lag(HW_day_34C, 1) + HW_day_34C >= 2),
     HW_p90_2d = +(lag(HW_day_p90, 1) + HW_day_p90 >= 2),
     HW_p95_2d = +(lag(HW_day_p95, 1) + HW_day_p95 >= 2),
     HW_p99_2d = +(lag(HW_day_p99, 1) + HW_day_p99 >= 2),
 
     # 3 days HW consecutive with run length encoding (RLE)
     HW_30C_3d = +(lag(HW_day_30C, 2) + lag(HW_day_30C, 1) + HW_day_30C >= 3),
+    HW_31C_3d = +(lag(HW_day_31C, 2) + lag(HW_day_31C, 1) + HW_day_31C >= 3),
+    HW_32C_3d = +(lag(HW_day_32C, 2) + lag(HW_day_32C, 1) + HW_day_32C >= 3),
+    HW_33C_3d = +(lag(HW_day_33C, 2) + lag(HW_day_33C, 1) + HW_day_33C >= 3),
+    HW_34C_3d = +(lag(HW_day_34C, 2) + lag(HW_day_34C, 1) + HW_day_34C >= 3),
     HW_p90_3d = +(lag(HW_day_p90, 2) + lag(HW_day_p90, 1) + HW_day_p90 >= 3),
     HW_p95_3d = +(lag(HW_day_p95, 2) + lag(HW_day_p95, 1) + HW_day_p95 >= 3),
     HW_p99_3d = +(lag(HW_day_p99, 2) + lag(HW_day_p99, 1) + HW_day_p99 >= 3),
 
     # 4 days HW consecutive with run length encoding (RLE)
     HW_30C_4d = +(lag(HW_day_30C, 3) + lag(HW_day_30C, 2) + lag(HW_day_30C, 1) + HW_day_30C >= 4),
+    HW_31C_4d = +(lag(HW_day_31C, 3) + lag(HW_day_31C, 2) + lag(HW_day_31C, 1) + HW_day_31C >= 4),
+    HW_32C_4d = +(lag(HW_day_32C, 3) + lag(HW_day_32C, 2) + lag(HW_day_32C, 1) + HW_day_32C >= 4),
+    HW_33C_4d = +(lag(HW_day_33C, 3) + lag(HW_day_33C, 2) + lag(HW_day_33C, 1) + HW_day_33C >= 4),
+    HW_34C_4d = +(lag(HW_day_34C, 3) + lag(HW_day_34C, 2) + lag(HW_day_34C, 1) + HW_day_34C >= 4),
     HW_p90_4d = +(lag(HW_day_p90, 3) + lag(HW_day_p90, 2) + lag(HW_day_p90, 1) + HW_day_p90 >= 4),
     HW_p95_4d = +(lag(HW_day_p95, 3) + lag(HW_day_p95, 2) + lag(HW_day_p95, 1) + HW_day_p95 >= 4),
     HW_p99_4d = +(lag(HW_day_p99, 3) + lag(HW_day_p99, 2) + lag(HW_day_p99, 1) + HW_day_p99 >= 4)
@@ -135,7 +155,9 @@ summary(hw_data)
 # Apply EHF definition -----
 
 # Funtion to estimate EHIsigi, EHIaccli and EHF with p95 by com 
-EHF <- function(data, temp_col, date_col, p95_col, period_days = 30) {
+
+# Function to estimate EHIsigi, EHIaccli and EHF with p95 by com for n_days
+EHF <- function(data, temp_col, date_col, p95_col, n_days = 3, period_days = 30) {
   
   # Verificar si las columnas existen en el conjunto de datos
   required_cols <- c(temp_col, date_col, p95_col)
@@ -146,14 +168,14 @@ EHF <- function(data, temp_col, date_col, p95_col, period_days = 30) {
   # Ordenar los datos por fecha para asegurar la secuencia
   data <- data %>% arrange(.data[[date_col]])
   
-  # Calcular EHIsigi, EHIaccli y EHF en un solo paso
+  # Calcular EHIsigi, EHIaccli y EHF dinámicamente basado en n_days
   data <- data %>%
     mutate(
-      # EHIsigi: promedio de los últimos tres días menos el percentil 95 de cada fila
-      EHIsigi = (lag(.data[[temp_col]], 0) + lag(.data[[temp_col]], 1) + lag(.data[[temp_col]], 2)) / 3 - .data[[p95_col]],
+      # EHIsigi: promedio de los últimos n_days menos el percentil 95 de cada fila
+      EHIsigi = rowMeans(sapply(0:(n_days - 1), function(i) lag(.data[[temp_col]], i)), na.rm = TRUE) - .data[[p95_col]],
       
-      # EHIaccli: promedio de los últimos tres días menos el promedio de los 30 días anteriores
-      EHIaccli = (lag(.data[[temp_col]], 0) + lag(.data[[temp_col]], 1) + lag(.data[[temp_col]], 2)) / 3 - 
+      # EHIaccli: promedio de los últimos n_days menos el promedio de los 30 días anteriores
+      EHIaccli = rowMeans(sapply(0:(n_days - 1), function(i) lag(.data[[temp_col]], i)), na.rm = TRUE) - 
                  rollmean(.data[[temp_col]], period_days, align = "right", fill = NA),
       
       # EHF: producto de EHIsigi y el máximo entre 1 y EHIaccli
@@ -163,10 +185,19 @@ EHF <- function(data, temp_col, date_col, p95_col, period_days = 30) {
   return(data)
 }
 
-hw_data <- EHF(hw_data, "tmax", "date", "p95")
+n_days_list <- c(2, 3, 4)
+for (n_days in n_days_list) {
+  
+  hw_data <- hw_data %>%
+    EHF(temp_col = "tmax", date_col = "date", p95_col = "p95", n_days = n_days) %>%
+    mutate(!!paste0("HW_EHF_", n_days, "d") := if_else(EHF > 0, 1, 0))
 
-hw_data <- hw_data %>% 
-  mutate(HW_EHF=if_else(EHF > 0, 1, 0))
+}
+
+#hw_data <- EHF(hw_data, "tmax", "date", "p95")
+
+#hw_data <- hw_data %>% 
+#  mutate(HW_EHF=if_else(EHF > 0, 1, 0))
 
 summary(hw_data)
 

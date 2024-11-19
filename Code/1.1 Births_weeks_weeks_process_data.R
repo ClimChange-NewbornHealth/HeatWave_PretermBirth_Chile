@@ -126,16 +126,24 @@ save(births, file=paste0(data_out, "births_1992_2020_weeks", ".RData"))
 #births <- rio::import(paste0(data_out, "births_1992_2020_weeks", ".RData"))
 
 ## Define the range of time observation
-dates_range <- function(date) {
-  any(date >= as.Date(paste0(year(date)-1, "-11-01")) & date <= as.Date(paste0(year(date), "-03-31")))
+#dates_range <- function(date) {
+#  any(date >= as.Date(paste0(year(date)-1, "-11-01")) & date <= as.Date(paste0(year(date), "-03-31")))
+#}
+
+dates_range <- function(dates) {
+  all(dates >= as.Date(paste0(year(dates[1]) - 1, "-11-01")) & 
+      dates <= as.Date(paste0(year(dates[1]), "-03-31")))
 }
+
 
 ## Last month -> Nov, Dic, Ene, Feb, Mar
 births_last_month <- births %>%
   group_by(id) %>%  
   filter(week_gest_num > (max(week_gest_num) - 4)) %>%  
-  ungroup() %>% 
-  filter(dates_range(date_end_week))
+  summarize(all_in_summer = dates_range(date_end_week), .groups = "drop") %>% 
+  filter(all_in_summer) %>%  
+  left_join(births, by = "id") %>% 
+  mutate(month_end_week = month(date_end_week))
 
 save(births_last_month, file=paste0(data_out, "births_1992_2020_last_month", ".RData"))
 

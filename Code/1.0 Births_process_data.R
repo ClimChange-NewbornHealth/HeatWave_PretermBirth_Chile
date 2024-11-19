@@ -351,3 +351,5 @@ births <- births %>%
 glimpse(births)
 save(births, file=paste0(data_out, "births_1992_2020", ".RData"))
 
+# 4 semanas completas
+

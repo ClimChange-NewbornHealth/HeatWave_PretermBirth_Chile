@@ -15,7 +15,7 @@ data_out <- "Data/Output/"
 hw_data <- rio::import(paste0(data_out, "hw_data_1980_2021", ".RData"))
 
 # BW
-bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month", ".RData"))
+#bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month", ".RData"))
 bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week", ".RData"))
 
 # Adjust BW with urban Santiago
@@ -29,19 +29,19 @@ com <- chilemapas::codigos_territoriales |>
 # 33 COM
 com_suburb <- c(unique(com$codigo_comuna[com$nombre_provincia=="Santiago"]), 13201) # +13201
 
-bw_data_lm <- bw_data_lm %>% filter(com %in% com_suburb )
+#bw_data_lm <- bw_data_lm %>% filter(com %in% com_suburb )
 bw_data_lw <- bw_data_lw %>% filter(com %in% com_suburb )
 
 ## Join Data ---- 
 
 # Optimize with data.table
-setDT(bw_data_lm)
+#setDT(bw_data_lm)
 setDT(bw_data_lw)
 setDT(hw_data)
 
 # Join tables per range
-bw_data_lm[, start := date_start_week]
-bw_data_lm[, end := date_end_week]
+#bw_data_lm[, start := date_start_week]
+#bw_data_lm[, end := date_end_week]
 
 bw_data_lw[, start := date_start_week]
 bw_data_lw[, end := date_end_week]
@@ -52,7 +52,7 @@ hw_data[, end := date]
 
 # Seteamos 
 setkey(hw_data, name_com, start, end)
-setkey(bw_data_lm, name_com, start, end)
+#setkey(bw_data_lm, name_com, start, end)
 setkey(bw_data_lw, name_com, start, end)
 
 # Time estimation bw last month 
@@ -104,38 +104,67 @@ tic()
 hw_data_lw <- foverlaps(hw_data, bw_data_lw, type = "any", nomatch = 0) %>%
   .[, .(
     HW_30C_2d_bin = as.integer(any(HW_30C_2d > 0, na.rm = TRUE)),
+    HW_31C_2d_bin = as.integer(any(HW_31C_2d > 0, na.rm = TRUE)),
+    HW_32C_2d_bin = as.integer(any(HW_32C_2d > 0, na.rm = TRUE)),
+    HW_33C_2d_bin = as.integer(any(HW_33C_2d > 0, na.rm = TRUE)),
+    HW_34C_2d_bin = as.integer(any(HW_34C_2d > 0, na.rm = TRUE)),
     HW_p90_2d_bin = as.integer(any(HW_p90_2d > 0, na.rm = TRUE)),
     HW_p95_2d_bin = as.integer(any(HW_p95_2d > 0, na.rm = TRUE)),
     HW_p99_2d_bin = as.integer(any(HW_p99_2d > 0, na.rm = TRUE)),
     
     HW_30C_2d_count = sum(HW_30C_2d, na.rm = TRUE),
+    HW_31C_2d_count = sum(HW_31C_2d, na.rm = TRUE),
+    HW_32C_2d_count = sum(HW_32C_2d, na.rm = TRUE),
+    HW_33C_2d_count = sum(HW_33C_2d, na.rm = TRUE),
+    HW_34C_2d_count = sum(HW_34C_2d, na.rm = TRUE),
     HW_p90_2d_count = sum(HW_p90_2d, na.rm = TRUE),
     HW_p95_2d_count = sum(HW_p95_2d, na.rm = TRUE),
     HW_p99_2d_count = sum(HW_p99_2d, na.rm = TRUE),
 
     HW_30C_3d_bin = as.integer(any(HW_30C_3d > 0, na.rm = TRUE)),
+    HW_31C_3d_bin = as.integer(any(HW_31C_3d > 0, na.rm = TRUE)),
+    HW_32C_3d_bin = as.integer(any(HW_32C_3d > 0, na.rm = TRUE)),
+    HW_33C_3d_bin = as.integer(any(HW_33C_3d > 0, na.rm = TRUE)),
+    HW_34C_3d_bin = as.integer(any(HW_34C_3d > 0, na.rm = TRUE)),
     HW_p90_3d_bin = as.integer(any(HW_p90_3d > 0, na.rm = TRUE)),
     HW_p95_3d_bin = as.integer(any(HW_p95_3d > 0, na.rm = TRUE)),
     HW_p99_3d_bin = as.integer(any(HW_p99_3d > 0, na.rm = TRUE)),
     
     HW_30C_3d_count = sum(HW_30C_3d, na.rm = TRUE),
+    HW_31C_3d_count = sum(HW_31C_3d, na.rm = TRUE),
+    HW_32C_3d_count = sum(HW_32C_3d, na.rm = TRUE),
+    HW_33C_3d_count = sum(HW_33C_3d, na.rm = TRUE),
+    HW_34C_3d_count = sum(HW_34C_3d, na.rm = TRUE),
     HW_p90_3d_count = sum(HW_p90_3d, na.rm = TRUE),
     HW_p95_3d_count = sum(HW_p95_3d, na.rm = TRUE),
     HW_p99_3d_count = sum(HW_p99_3d, na.rm = TRUE),
 
     HW_30C_4d_bin = as.integer(any(HW_30C_4d > 0, na.rm = TRUE)),
+    HW_31C_4d_bin = as.integer(any(HW_31C_4d > 0, na.rm = TRUE)),
+    HW_32C_4d_bin = as.integer(any(HW_32C_4d > 0, na.rm = TRUE)),
+    HW_33C_4d_bin = as.integer(any(HW_33C_4d > 0, na.rm = TRUE)),
+    HW_34C_4d_bin = as.integer(any(HW_34C_4d > 0, na.rm = TRUE)),
     HW_p90_4d_bin = as.integer(any(HW_p90_4d > 0, na.rm = TRUE)),
     HW_p95_4d_bin = as.integer(any(HW_p95_4d > 0, na.rm = TRUE)),
     HW_p99_4d_bin = as.integer(any(HW_p99_4d > 0, na.rm = TRUE)),
     
     HW_30C_4d_count = sum(HW_30C_4d, na.rm = TRUE),
+    HW_31C_4d_count = sum(HW_31C_4d, na.rm = TRUE),
+    HW_32C_4d_count = sum(HW_32C_4d, na.rm = TRUE),
+    HW_33C_4d_count = sum(HW_33C_4d, na.rm = TRUE),
+    HW_34C_4d_count = sum(HW_34C_4d, na.rm = TRUE),
     HW_p90_4d_count = sum(HW_p90_4d, na.rm = TRUE),
     HW_p95_4d_count = sum(HW_p95_4d, na.rm = TRUE),
     HW_p99_4d_count = sum(HW_p99_4d, na.rm = TRUE),
 
-    HW_EHF_bin = as.integer(any(HW_EHF > 0, na.rm = TRUE)),
-    HW_EHF_count = sum(HW_EHF, na.rm = TRUE)
-
+    HW_EHF_2d_bin = as.integer(any(HW_EHF_2d > 0, na.rm = TRUE)),
+    HW_EHF_3d_bin = as.integer(any(HW_EHF_3d > 0, na.rm = TRUE)),
+    HW_EHF_4d_bin = as.integer(any(HW_EHF_4d > 0, na.rm = TRUE)),
+    
+    HW_EHF_2d_count = sum(HW_EHF_2d, na.rm = TRUE),
+    HW_EHF_3d_count = sum(HW_EHF_3d, na.rm = TRUE),
+    HW_EHF_4d_count = sum(HW_EHF_4d, na.rm = TRUE)
+    
   ), by = .(name_com, id,  date_start_week, date_end_week)]
 
 toc() # Time 19.446 sec elapsed
