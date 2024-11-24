@@ -8,6 +8,7 @@ source("Code/0.2 Settings.R")
 # Data path 
 data_inp <- "Data/Input/HW/"
 data_out <- "Data/Output/"
+data_sovi <- "Data/Input/SOVI/"
 
 ## Data ---- 
 
@@ -31,6 +32,13 @@ com_suburb <- c(unique(com$codigo_comuna[com$nombre_provincia=="Santiago"]), 132
 
 #bw_data_lm <- bw_data_lm %>% filter(com %in% com_suburb )
 bw_data_lw <- bw_data_lw %>% filter(com %in% com_suburb )
+
+# Add vulnerability data 
+sovi <- rio::import(paste0(data_sovi, "sovi_datasets", ".RData")) %>% select(-name_comuna)
+
+hw_data <- hw_data %>% left_join(sovi, by=c("com"="cod_com"))
+
+summary(hw_data)
 
 ## Join Data ---- 
 
@@ -171,15 +179,15 @@ toc() # Time 19.446 sec elapsed
 
 # Join data 
 
-bw_data_lm_joined <- bw_data_lm %>%
-  left_join(hw_data_lm, by=c("id", "name_com", "date_start_week", "date_end_week"))
+#bw_data_lm_joined <- bw_data_lm %>%
+#  left_join(hw_data_lm, by=c("id", "name_com", "date_start_week", "date_end_week"))
   
 bw_data_lw_joined <- bw_data_lw %>% 
   left_join(hw_data_lw, by=c("id", "name_com", "date_start_week", "date_end_week"))
 
-summary(bw_data_lm_joined)
+#summary(bw_data_lm_joined)
 summary(bw_data_lw_joined)
 
 # Save data
-save(bw_data_lm_joined, file=paste0(data_out, "births_1992_2020_last_month_hw", ".RData"))
+#save(bw_data_lm_joined, file=paste0(data_out, "births_1992_2020_last_month_hw", ".RData"))
 save(bw_data_lw_joined, file=paste0(data_out, "births_1992_2020_last_week_hw", ".RData"))

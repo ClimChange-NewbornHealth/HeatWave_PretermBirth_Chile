@@ -12,8 +12,9 @@ data_out <- "Data/Output/"
 ## Temp data ---- 
 
 tmax <- rio::import(paste0(data_inp, "CR2MET_tmax_v2.5_day_COM_TS_1980_2021.csv"))
+tmean <- rio::import(paste0(data_inp, "CR2MET_pr_v2.5_day_COM_TS_1980_2021_mmday.csv"))
 
-# Adjust long data and time
+# Adjust long data and time tmax
 metadata <- tmax[1:4, 4:ncol(tmax)] %>%
   t() %>%
   as.data.frame() %>%
@@ -42,6 +43,40 @@ tmax <- tmax %>%
     )
 
 glimpse(tmax)
+
+
+# Adjust long data and time tmean -> Ver con Estela porque los valores son raros
+metadata <- tmean[1:4, 4:ncol(tmean)] %>%
+  t() %>%
+  as.data.frame() %>%
+  rename(com = `1`, lat = `2`, long = `3`, sup = `4`) 
+
+temp <-  tmean[-(2:4), ] %>% 
+  row_to_names(row_number = 1) %>% 
+  clean_names() %>% 
+  rename("year"="x9999", 
+         "month"="x9999_2",
+         "day"="x9999_3") %>% 
+  pivot_longer(cols = starts_with("x"), 
+               names_to = "com", 
+               values_to = "tmean") %>% 
+  mutate(com=str_remove(com, "x"),
+         com=as.numeric(com))
+
+tmean <- temp %>% 
+  left_join(metadata, by="com") %>% 
+  filter(com >= 13000 & com < 14000) # 52 com ids
+
+tmean <- tmean %>% 
+    mutate(
+      date = as.Date(paste(year, month, day, sep = "-")),
+      year_month = format(date, "%m-%Y")
+    )
+
+glimpse(tmean)
+
+test  <- tmean %>% group_by(com) %>% summarise(mean=mean(tmean), min=min(tmean), max=max(tmean))
+test
 
 # Add regional codes 
 com <- chilemapas::codigos_territoriales |> 
@@ -144,17 +179,12 @@ data <- data %>%
   # NA with begin serie
   mutate(across(contains("HW_"), ~replace_na(., 0)))
 
-return(data)
-
-
-}
+return(data)}
 
 hw_data <- detect_HW(tmax)
 summary(hw_data)
 
 # Apply EHF definition -----
-
-# Funtion to estimate EHIsigi, EHIaccli and EHF with p95 by com 
 
 # Function to estimate EHIsigi, EHIaccli and EHF with p95 by com for n_days
 EHF <- function(data, temp_col, date_col, p95_col, n_days = 3, period_days = 30) {
@@ -185,6 +215,7 @@ EHF <- function(data, temp_col, date_col, p95_col, n_days = 3, period_days = 30)
   return(data)
 }
 
+# Iteramos para bandas de 2, 3 y 4 días
 n_days_list <- c(2, 3, 4)
 for (n_days in n_days_list) {
   
