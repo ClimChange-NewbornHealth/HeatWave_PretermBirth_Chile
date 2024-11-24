@@ -24,7 +24,7 @@ glimpse(bw_data_lw)
 
 
 ## PR COX Models ---- 
-
+tic()
 bw_data_lw <- bw_data_lw %>% drop_na()
 
 dependent_vars <- c("birth_preterm", "birth_very_preterm", "birth_moderately_preterm", 
@@ -44,7 +44,7 @@ fit_cox_model <- function(dependent, predictor) {
   formula <- as.formula(paste("Surv(weeks, ", dependent, ") ~ ", predictor, 
                               "+ sex + age_group_mom + educ_group_mom + job_group_mom +",
                               "age_group_dad + educ_group_dad + job_group_dad +",
-                              "factor(year_nac)"))
+                              "factor(year_nac) + vulnerability"))
   
   # Ajuste del modelo de Cox
   model_fit <- coxph(formula, data = bw_data_lw)
@@ -68,7 +68,9 @@ results_list <- map(dependent_vars, function(dep_var) {
     fit_cox_model(dep_var, hw_var)
   })
 })
+tic()
 
+# Extract results
 results_cox <- bind_rows(results_list)
 
 writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models", ".xlsx"))

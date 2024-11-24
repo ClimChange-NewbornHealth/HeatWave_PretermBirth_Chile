@@ -34,11 +34,15 @@ com_suburb <- c(unique(com$codigo_comuna[com$nombre_provincia=="Santiago"]), 132
 bw_data_lw <- bw_data_lw %>% filter(com %in% com_suburb )
 
 # Add vulnerability data 
-sovi <- rio::import(paste0(data_sovi, "sovi_datasets", ".RData")) %>% select(-name_comuna)
+sovi <- rio::import(paste0(data_sovi, "sovi_datasets", ".RData")) %>% 
+  select(-name_comuna)  %>% 
+  rename(vulnerability=vulnerablidad) %>% 
+    mutate(vulnerability = fct_recode(vulnerability,
+      "Low" = "Baja",
+      "Medium-low" = "Medio-baja",
+      "Medium-high" = "Medio-alta"))
 
 hw_data <- hw_data %>% left_join(sovi, by=c("com"="cod_com"))
-
-summary(hw_data)
 
 ## Join Data ---- 
 
@@ -183,7 +187,8 @@ toc() # Time 19.446 sec elapsed
 #  left_join(hw_data_lm, by=c("id", "name_com", "date_start_week", "date_end_week"))
   
 bw_data_lw_joined <- bw_data_lw %>% 
-  left_join(hw_data_lw, by=c("id", "name_com", "date_start_week", "date_end_week"))
+  left_join(hw_data_lw, by=c("id", "name_com", "date_start_week", "date_end_week")) %>% 
+    left_join(sovi, by=c("com"="cod_com"))
 
 #summary(bw_data_lm_joined)
 summary(bw_data_lw_joined)
