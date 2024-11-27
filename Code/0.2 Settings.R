@@ -71,5 +71,6 @@ install_load(c("rio",
                "survival",
                "flexsurv",
                "survminer",
-               "ggsurvfit"
+               "ggsurvfit",
+               "RColorBrewer"
                ))

@@ -46,7 +46,7 @@ screenreg(l=list(m2, m6), digits=3)
 bw_data_lw <- bw_data_lw %>% drop_na()
 
 # Variables dependientes y predictoras
-dependent_vars <- c("birth_preterm") #, "birth_very_preterm", "birth_moderately_preterm", "birth_late_preterm"
+dependent_vars <- c("birth_moderately_preterm") #, "birth_very_preterm", "birth_moderately_preterm", "birth_late_preterm"
 
 heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin", 
                    "HW_31C_2d_bin", "HW_31C_3d_bin", "HW_31C_4d_bin", 

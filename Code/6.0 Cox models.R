@@ -18,11 +18,6 @@ bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RD
 # Adjust data 
 glimpse(bw_data_lw)
 
-# Graficar los tiempos de sobrevivencia. 
-# Graficar el KM 
-# Evaluar funciones de sobrevivecia para esto.
-
-
 ## PR COX Models ---- 
 tic()
 bw_data_lw <- bw_data_lw %>% drop_na()
@@ -117,27 +112,28 @@ for (dep_var in dependent_vars) {
                                     "HW-33ºC 2D", "HW-33ºC 3D", "HW-33ºC 4D",
                                     "HW-34ºC 2D", "HW-34ºC 3D", "HW-34ºC 4D")))
 
-                                    data_subset_p <- data_subset %>% 
-                                      filter(term %in% c(
-                                        "HW_EHF_2d_bin", "HW_EHF_3d_bin", "HW_EHF_4d_bin",
-                                        "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
-                                        "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
-                                        "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin" 
-                                   )) %>% 
-                                      mutate(term=factor(term, 
-                                        levels = c(
-                                        "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
-                                        "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
-                                        "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin",
-                                        "HW_EHF_2d_bin", "HW_EHF_3d_bin", "HW_EHF_4d_bin"
-                                      ), 
-                                        labels = c(
-                                        "HW-P90 2D", "HW-P90 3D", "HW-P90 4D",
-                                        "HW-P95 2D", "HW-P95 3D", "HW-P95 4D",
-                                        "HW-P99 2D", "HW-P99 3D", "HW-P99 4D",
-                                        "HW-EHF 2D", "HW-EHF 3D", "HW-EHF 4D"
-                                  
-                                        )))
+  data_subset_p <- data_subset %>% 
+    filter(term %in% c(
+      "HW_EHF_2d_bin", "HW_EHF_3d_bin", "HW_EHF_4d_bin",
+      "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
+      "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
+      "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin" 
+ )) %>% 
+    mutate(term=factor(term, 
+      levels = c(
+      "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
+      "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
+      "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin",
+      "HW_EHF_2d_bin", "HW_EHF_3d_bin", "HW_EHF_4d_bin"
+    ), 
+      labels = c(
+      "HW-P90 2D", "HW-P90 3D", "HW-P90 4D",
+      "HW-P95 2D", "HW-P95 3D", "HW-P95 4D",
+      "HW-P99 2D", "HW-P99 3D", "HW-P99 4D",
+      "HW-EHF 2D", "HW-EHF 3D", "HW-EHF 4D"
+
+      )))
+                                      
                                     
   text_x_position <- if (dep_var == "birth_very_preterm" || dep_var == "birth_moderately_preterm") {
     1.33 
