@@ -18,9 +18,14 @@ bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RD
 # Adjust data 
 glimpse(bw_data_lw)
 
+bw_data_lw <- bw_data_lw %>% drop_na()
+
+bw_data_lw$vulnerability <- droplevels(
+  bw_data_lw$vulnerability[bw_data_lw$vulnerability != "Alta"]
+)
+
 ## PR COX Models ---- 
 tic()
-bw_data_lw <- bw_data_lw %>% drop_na()
 
 dependent_vars <- c("birth_preterm", "birth_very_preterm", "birth_moderately_preterm", 
                     "birth_late_preterm") # , "birth_term", "birth_posterm"
@@ -33,7 +38,14 @@ heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin",
                    "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
                    "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
                    "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin", 
-                   "HW_EHF_2d_bin", "HW_EHF_3d_bin", "HW_EHF_4d_bin")
+                   "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin",
+                   "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin",
+                   "HW_EHF_TAD_low_bin", "HW_EHF_TAD_sev_bin", "HW_EHF_TAD_ext_bin", 
+                   "HW_EHF_TMAX_low_bin", "HW_EHF_TMAX_sev_bin", "HW_EHF_TMAX_ext_bin", 
+                   "P90_min_2d_bin", "P95_min_2d_bin", "P99_min_2d_bin", 
+                   "P90_min_3d_bin", "P95_min_3d_bin", "P99_min_3d_bin", 
+                   "P90_min_4d_bin", "P95_min_4d_bin", "P99_min_4d_bin"
+                  )
 
 fit_cox_model <- function(dependent, predictor) {
   formula <- as.formula(paste("Surv(weeks, ", dependent, ") ~ ", predictor, 
@@ -63,14 +75,14 @@ results_list <- map(dependent_vars, function(dep_var) {
     fit_cox_model(dep_var, hw_var)
   })
 })
-tic()
+toc() # time: 
 
 # Extract results
 results_cox <- bind_rows(results_list)
 
-writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models", ".xlsx"))
+writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models_lw", ".xlsx"))
 
-results_cox <- rio::import(paste0("Output/", "Models/", "Cox_models", ".xlsx")))
+results_cox <- rio::import(paste0("Output/", "Models/", "Cox_models_lw", ".xlsx")))
 
 # Plots with HW - Effects
 
@@ -114,24 +126,32 @@ for (dep_var in dependent_vars) {
 
   data_subset_p <- data_subset %>% 
     filter(term %in% c(
-      "HW_EHF_2d_bin", "HW_EHF_3d_bin", "HW_EHF_4d_bin",
       "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
       "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
-      "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin" 
+      "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin", 
+      "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin",
+      "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin"
+      #"HW_EHF_TAD_low_bin", "HW_EHF_TAD_sev_bin", "HW_EHF_TAD_ext_bin", 
+      #"HW_EHF_TMAX_low_bin", "HW_EHF_TMAX_sev_bin", "HW_EHF_TMAX_ext_bin" 
  )) %>% 
     mutate(term=factor(term, 
       levels = c(
       "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
       "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
       "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin",
-      "HW_EHF_2d_bin", "HW_EHF_3d_bin", "HW_EHF_4d_bin"
+      "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin",
+      "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin"
+      #"HW_EHF_TAD_low_bin", "HW_EHF_TAD_sev_bin", "HW_EHF_TAD_ext_bin", 
+      #"HW_EHF_TMAX_low_bin", "HW_EHF_TMAX_sev_bin", "HW_EHF_TMAX_ext_bin" 
     ), 
       labels = c(
       "HW-P90 2D", "HW-P90 3D", "HW-P90 4D",
       "HW-P95 2D", "HW-P95 3D", "HW-P95 4D",
       "HW-P99 2D", "HW-P99 3D", "HW-P99 4D",
-      "HW-EHF 2D", "HW-EHF 3D", "HW-EHF 4D"
-
+      "HW-EHF 2D - TAD", "HW-EHF 3D - TAD", "HW-EHF 4D - TAD",
+      "HW-EHF 2D - TMAX", "HW-EHF 3D - TMAX", "HW-EHF 4D - TMAX"
+      #"HW-EHF LOW - TAD", "HW-EHF SEV - TAD", "HW-EHF EXT - TAD",
+      #"HW-EHF LOW - TMAX", "HW-EHF SEV - TMAX", "HW-EHF EXT - TMAX"
       )))
                                       
                                     
@@ -158,9 +178,9 @@ for (dep_var in dependent_vars) {
     geom_vline(xintercept = 1, linetype = "dashed", color = "red", alpha = 0.5) +
     scale_colour_manual(name = "Duration HW:", values = c("#e59866", "#d35400", "#873600")) +
     scale_x_continuous(limits = x_limits) +
-    geom_text(aes(x = text_x_position, label = paste0(format(round(estimate, 2), nsmall = 2), " (", 
-                                                      format(round(conf.low, 2), nsmall = 2), " - ", 
-                                                      format(round(conf.high, 2), nsmall = 2), ")")), 
+    geom_text(aes(x = text_x_position, label = paste0(format(round(estimate, 3), nsmall = 2), " (", 
+                                                      format(round(conf.low, 3), nsmall = 2), " - ", 
+                                                      format(round(conf.high, 3), nsmall = 2), ")")), 
               position = position_dodge(width = 0.75), size = 3, show.legend = FALSE) + 
     labs(title = NULL,
          x = "HRs and 95% CI", 
@@ -175,15 +195,16 @@ for (dep_var in dependent_vars) {
   p2 <- ggplot(data_subset_p, aes(x = estimate, y = term, color = duration_label)) +
     geom_point(size = 3, shape = 15) +
     geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+    geom_hline(yintercept = 12.5, color = "gray") +
     geom_hline(yintercept = 9.5, color = "gray") +
     geom_hline(yintercept = 6.5, color = "gray") +
     geom_hline(yintercept = 3.5, color = "gray") +
     geom_vline(xintercept = 1, linetype = "dashed", color = "red", alpha = 0.5) +
     scale_colour_manual(name = "Duration HW:", values = c("#e59866", "#d35400", "#873600")) +
     scale_x_continuous(limits = x_limits) +
-    geom_text(aes(x = text_x_position, label = paste0(format(round(estimate, 2), nsmall = 2), " (", 
-                                                      format(round(conf.low, 2), nsmall = 2), " - ", 
-                                                      format(round(conf.high, 2), nsmall = 2), ")")), 
+    geom_text(aes(x = text_x_position, label = paste0(format(round(estimate, 3), nsmall = 2), " (", 
+                                                      format(round(conf.low, 3), nsmall = 2), " - ", 
+                                                      format(round(conf.high, 3), nsmall = 2), ")")), 
               position = position_dodge(width = 0.75), size = 3, show.legend = FALSE) + 
     labs(title = NULL,
          x = "HRs and 95% CI", 
@@ -204,6 +225,9 @@ for (dep_var in dependent_vars) {
 # Save plots
 
 plots$birth_preterm
+plots$birth_very_preterm
+plots$birth_moderately_preterm
+plots$birth_late_preterm
 
 ggsave(plots$birth_preterm,
        filename = paste0("Output/", "Models/", "PTB_COX", ".png"), # "Preterm_trendsrm1991"

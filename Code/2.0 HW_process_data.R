@@ -284,13 +284,23 @@ EHF_p85_tmax <- quantile(hw_data$EHF_tad[hw_data$EHF_tmax> 0 ], p=0.85, na.rm = 
 
 hw_data <- hw_data %>% 
   mutate(
-    EHF_tad_low = if_else((EHF_tad/EHF_p85_tad)<=1, 1, 0),
-    EHF_tad_sev = if_else((EHF_tad/EHF_p85_tad)>1 & (EHF_tad/EHF_p85_tad)<3, 1, 0),
-    EHF_tad_ext = if_else((EHF_tad/EHF_p85_tad)>=3, 1, 0),
-
-    EHF_tmax_low = if_else((EHF_tmax/EHF_p85_tmax)<=1, 1, 0),
-    EHF_tmax_sev = if_else((EHF_tmax/EHF_p85_tmax)>1 & (EHF_tad/EHF_p85_tmax)<3, 1, 0),
-    EHF_tmax_ext = if_else((EHF_tmax/EHF_p85_tmax)>=3, 1, 0)
-)
+    EHF_tad_sev = case_when(
+      (EHF_tad/EHF_p85_tad) <=0 ~ 1, 
+      (EHF_tad/EHF_p85_tad) > 0 & (EHF_tad/EHF_p85_tad)<=1 ~ 2, # "Low"
+      (EHF_tad/EHF_p85_tad) > 1 & (EHF_tad/EHF_p85_tad) < 3 ~ 3, # "Severe"
+      (EHF_tad/EHF_p85_tad) >= 3 ~ 4 # "Extreme"
+    )) %>%
+  mutate(
+    EHF_tmax_sev = case_when(
+      (EHF_tmax/EHF_p85_tmax) <=0 ~ 1, 
+      (EHF_tmax/EHF_p85_tmax) > 0 & (EHF_tad/EHF_p85_tmax)<=1 ~ 2, # "Low"
+      (EHF_tmax/EHF_p85_tmax) > 1 & (EHF_tad/EHF_p85_tmax) < 3 ~ 3, # "Severe"
+      (EHF_tmax/EHF_p85_tmax) >= 3 ~ 4 # "Extreme"
+    )) %>%
+    mutate(
+      EHF_tad_sev = factor(EHF_tad_sev, levels=c(1:4), labels=c("Non-HW", "Low", "Severe", "Extreme")),
+      EHF_tmax_sev = factor(EHF_tmax_sev, levels=c(1:4), labels=c("Non-HW", "Low", "Severe", "Extreme"))
+    )
 
 save(hw_data, file=paste0(data_out, "hw_data_1980_2021", ".RData"))
+
