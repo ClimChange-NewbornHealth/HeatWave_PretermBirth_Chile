@@ -293,8 +293,8 @@ hw_data <- hw_data %>%
   mutate(
     EHF_tmax_sev = case_when(
       (EHF_tmax/EHF_p85_tmax) <=0 ~ 1, 
-      (EHF_tmax/EHF_p85_tmax) > 0 & (EHF_tad/EHF_p85_tmax)<=1 ~ 2, # "Low"
-      (EHF_tmax/EHF_p85_tmax) > 1 & (EHF_tad/EHF_p85_tmax) < 3 ~ 3, # "Severe"
+      (EHF_tmax/EHF_p85_tmax) > 0 & (EHF_tmax/EHF_p85_tmax)<=1 ~ 2, # "Low"
+      (EHF_tmax/EHF_p85_tmax) > 1 & (EHF_tmax/EHF_p85_tmax) < 3 ~ 3, # "Severe"
       (EHF_tmax/EHF_p85_tmax) >= 3 ~ 4 # "Extreme"
     )) %>%
     mutate(

@@ -40,8 +40,7 @@ heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin",
                    "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin", 
                    "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin",
                    "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin",
-                   "HW_EHF_TAD_low_bin", "HW_EHF_TAD_sev_bin", "HW_EHF_TAD_ext_bin", 
-                   "HW_EHF_TMAX_low_bin", "HW_EHF_TMAX_sev_bin", "HW_EHF_TMAX_ext_bin", 
+                   "HW_EHF_TAD_sev_first", "HW_EHF_TMAX_sev_first",
                    "P90_min_2d_bin", "P95_min_2d_bin", "P99_min_2d_bin", 
                    "P90_min_3d_bin", "P95_min_3d_bin", "P99_min_3d_bin", 
                    "P90_min_4d_bin", "P95_min_4d_bin", "P99_min_4d_bin"
@@ -75,7 +74,7 @@ results_list <- map(dependent_vars, function(dep_var) {
     fit_cox_model(dep_var, hw_var)
   })
 })
-toc() # time: 
+toc() # time: 3827.504 sec elapsed, 63 min
 
 # Extract results
 results_cox <- bind_rows(results_list)
@@ -86,8 +85,14 @@ results_cox <- rio::import(paste0("Output/", "Models/", "Cox_models_lw", ".xlsx"
 
 # Plots with HW - Effects
 
+sev <- c(
+  "HW_EHF_TAD_sev_firstLow", "HW_EHF_TAD_sev_firstSevere", "HW_EHF_TAD_sev_firstExtreme",
+  "HW_EHF_TMAX_sev_firstLow", "HW_EHF_TMAX_sev_firstSevere", "HW_EHF_TMAX_sev_firstExtreme"
+)
+
 results_filtered <- results_cox %>%
-  filter(term %in% heatwave_vars, dependent_var %in% dependent_vars)
+  filter(term %in% c(heatwave_vars, sev), 
+    dependent_var %in% dependent_vars)
 
 plots <- list()
 
