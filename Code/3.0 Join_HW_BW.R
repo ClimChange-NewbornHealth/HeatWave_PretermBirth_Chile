@@ -185,21 +185,24 @@ hw_data_lw <- foverlaps(hw_data, bw_data_lw, type = "any", nomatch = 0) %>%
     HW_EHF_TMAX_3d_count = sum(HW_EHF_tad_3d, na.rm = TRUE),
     HW_EHF_TMAX_4d_count = sum(HW_EHF_tad_4d, na.rm = TRUE),
 
-    HW_EHF_TAD_low_bin = as.integer(any(EHF_tad_low > 0, na.rm = TRUE)),
-    HW_EHF_TAD_sev_bin = as.integer(any(EHF_tad_sev > 0, na.rm = TRUE)),
-    HW_EHF_TAD_ext_bin = as.integer(any(EHF_tad_ext > 0, na.rm = TRUE)),
+    #HW_EHF_TAD_low_bin = as.integer(any(EHF_tad_low > 0, na.rm = TRUE)),
+    #HW_EHF_TAD_sev_bin = as.integer(any(EHF_tad_sev > 0, na.rm = TRUE)),
+    #HW_EHF_TAD_ext_bin = as.integer(any(EHF_tad_ext > 0, na.rm = TRUE)),
 
-    HW_EHF_TAD_low_count = sum(EHF_tad_low, na.rm = TRUE),
-    HW_EHF_TAD_sev_count = sum(EHF_tad_sev, na.rm = TRUE),
-    HW_EHF_TAD_ext_count = sum(EHF_tad_ext, na.rm = TRUE),
+    #HW_EHF_TAD_low_count = sum(EHF_tad_low, na.rm = TRUE),
+    #HW_EHF_TAD_sev_count = sum(EHF_tad_sev, na.rm = TRUE),
+    #HW_EHF_TAD_ext_count = sum(EHF_tad_ext, na.rm = TRUE),
 
-    HW_EHF_TMAX_low_bin = as.integer(any(EHF_tmax_low > 0, na.rm = TRUE)),
-    HW_EHF_TMAX_sev_bin = as.integer(any(EHF_tmax_sev > 0, na.rm = TRUE)),
-    HW_EHF_TMAX_ext_bin = as.integer(any(EHF_tmax_ext > 0, na.rm = TRUE)),
+    #HW_EHF_TMAX_low_bin = as.integer(any(EHF_tmax_low > 0, na.rm = TRUE)),
+    #HW_EHF_TMAX_sev_bin = as.integer(any(EHF_tmax_sev > 0, na.rm = TRUE)),
+    #HW_EHF_TMAX_ext_bin = as.integer(any(EHF_tmax_ext > 0, na.rm = TRUE)),
 
-    HW_EHF_TMAX_low_count = sum(EHF_tmax_low, na.rm = TRUE),
-    HW_EHF_TMAX_sev_count = sum(EHF_tmax_sev, na.rm = TRUE),
-    HW_EHF_TMAX_ext_count = sum(EHF_tmax_ext, na.rm = TRUE),
+    #HW_EHF_TMAX_low_count = sum(EHF_tmax_low, na.rm = TRUE),
+    #HW_EHF_TMAX_sev_count = sum(EHF_tmax_sev, na.rm = TRUE),
+    #HW_EHF_TMAX_ext_count = sum(EHF_tmax_ext, na.rm = TRUE),
+
+    HW_EHF_TAD_sev_first = first(EHF_tad_sev[!is.na(EHF_tad_sev)]),
+    HW_EHF_TMAX_sev_first = first(EHF_tmax_sev[!is.na(EHF_tmax_sev)]),
 
     P90_min_2d_bin = as.integer(any(HW_p90_min_2d > 0, na.rm = TRUE)),
     P95_min_2d_bin = as.integer(any(HW_p95_min_2d > 0, na.rm = TRUE)),
@@ -223,7 +226,7 @@ hw_data_lw <- foverlaps(hw_data, bw_data_lw, type = "any", nomatch = 0) %>%
     
   ), by = .(name_com, id,  date_start_week, date_end_week)]
 
-toc() # Time 91.846 sec elapsed
+toc() # Time 111.827 sec elapsed
 
 # Join data 
 
