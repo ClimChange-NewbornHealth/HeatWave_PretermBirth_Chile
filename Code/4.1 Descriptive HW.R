@@ -12,8 +12,14 @@ data_out <- "Data/Output/"
 ## Data ---- 
 
 # BW
-bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RData"))
-#bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month_hw", ".RData"))
+bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RData")) %>% drop_na()
+bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month_hw", ".RData")) %>% drop_na()
+bw_data_lmu <- bw_data_lm %>% distinct(id, .keep_all = TRUE)
+hw_data <- rio::import(paste0(data_out, "hw_data_1980_2021", ".RData"))
+
+
+
+
 
 # Adjust data 
 glimpse(bw_data_lw)
