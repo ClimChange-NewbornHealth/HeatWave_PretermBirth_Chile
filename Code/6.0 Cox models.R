@@ -95,6 +95,8 @@ results_filtered <- results_cox %>%
     dependent_var %in% dependent_vars)
 
 plots <- list()
+plots2 <- list()
+plots3 <- list()
 
 for (dep_var in dependent_vars) {
   # Subset data for the current dependent variable
@@ -134,32 +136,64 @@ for (dep_var in dependent_vars) {
       "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
       "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
       "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin", 
-      "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin",
-      "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin"
-      #"HW_EHF_TAD_low_bin", "HW_EHF_TAD_sev_bin", "HW_EHF_TAD_ext_bin", 
-      #"HW_EHF_TMAX_low_bin", "HW_EHF_TMAX_sev_bin", "HW_EHF_TMAX_ext_bin" 
+      "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin",
+      "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin"
  )) %>% 
     mutate(term=factor(term, 
       levels = c(
       "HW_p90_2d_bin", "HW_p90_3d_bin", "HW_p90_4d_bin", 
       "HW_p95_2d_bin", "HW_p95_3d_bin", "HW_p95_4d_bin",
       "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin",
-      "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin",
-      "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin"
-      #"HW_EHF_TAD_low_bin", "HW_EHF_TAD_sev_bin", "HW_EHF_TAD_ext_bin", 
-      #"HW_EHF_TMAX_low_bin", "HW_EHF_TMAX_sev_bin", "HW_EHF_TMAX_ext_bin" 
+      "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin",
+      "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin"
     ), 
       labels = c(
       "HW-P90 2D", "HW-P90 3D", "HW-P90 4D",
       "HW-P95 2D", "HW-P95 3D", "HW-P95 4D",
       "HW-P99 2D", "HW-P99 3D", "HW-P99 4D",
-      "HW-EHF 2D - TAD", "HW-EHF 3D - TAD", "HW-EHF 4D - TAD",
-      "HW-EHF 2D - TMAX", "HW-EHF 3D - TMAX", "HW-EHF 4D - TMAX"
-      #"HW-EHF LOW - TAD", "HW-EHF SEV - TAD", "HW-EHF EXT - TAD",
-      #"HW-EHF LOW - TMAX", "HW-EHF SEV - TMAX", "HW-EHF EXT - TMAX"
+      "HW-EHF 2D - TMAX", "HW-EHF 3D - TMAX", "HW-EHF 4D - TMAX",
+      "HW-EHF 2D - TAD", "HW-EHF 3D - TAD", "HW-EHF 4D - TAD"
       )))
                                       
-                                    
+  data_subset_e <-data_subset %>%
+    filter(term %in% c("HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin",
+                       "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin",
+                       "HW_EHF_TAD_sev_firstLow",  "HW_EHF_TAD_sev_firstSevere", "HW_EHF_TAD_sev_firstExtreme",
+                       "HW_EHF_TMAX_sev_firstLow", "HW_EHF_TMAX_sev_firstSevere", "HW_EHF_TMAX_sev_firstExtreme"
+                        )) %>% 
+    mutate(term=factor(term, 
+      levels = c(
+        "HW_EHF_TMAX_2d_bin", "HW_EHF_TMAX_3d_bin", "HW_EHF_TMAX_4d_bin",
+        "HW_EHF_TAD_2d_bin", "HW_EHF_TAD_3d_bin", "HW_EHF_TAD_4d_bin",
+        "HW_EHF_TAD_sev_firstLow",  "HW_EHF_TAD_sev_firstSevere", "HW_EHF_TAD_sev_firstExtreme",
+        "HW_EHF_TMAX_sev_firstLow", "HW_EHF_TMAX_sev_firstSevere", "HW_EHF_TMAX_sev_firstExtreme"
+      ), 
+      labels=c(
+        "HW-EHF 2D - TMAX", "HW-EHF 3D - TMAX", "HW-EHF 4D - TMAX",
+        "HW-EHF 2D - TAD", "HW-EHF 3D - TAD", "HW-EHF 4D - TAD", 
+        "HW-EHF Low - TAD", "HW-EHF Severe - TAD", "HW-EHF Extreme - TAD",
+        "HW-EHF Low - TMAX", "HW-EHF Severe - TMAX", "HW-EHF Extreme - TMAX"
+      ))) 
+  
+  
+  data_subset_min <- data_subset %>% 
+    filter(term %in% c(
+      "P90_min_2d_bin", "P90_min_3d_bin", "P90_min_4d_bin", 
+      "P95_min_2d_bin", "P95_min_3d_bin", "P95_min_4d_bin",
+      "P99_min_2d_bin", "P99_min_3d_bin", "P99_min_4d_bin" 
+ )) %>% 
+    mutate(term=factor(term, 
+      levels = c(
+      "P90_min_2d_bin", "P90_min_3d_bin", "P90_min_4d_bin", 
+      "P95_min_2d_bin", "P95_min_3d_bin", "P95_min_4d_bin",
+      "P99_min_2d_bin", "P99_min_3d_bin", "P99_min_4d_bin"
+    ), 
+      labels = c(
+      "CW-P90 2D", "CW-P90 3D", "CW-P90 4D",
+      "CW-P95 2D", "CW-P95 3D", "CW-P95 4D",
+      "CW-P99 2D", "CW-P99 3D", "CW-P99 4D"
+      )))
+  
   text_x_position <- if (dep_var == "birth_very_preterm" || dep_var == "birth_moderately_preterm") {
     1.33 
   } else {
@@ -220,11 +254,60 @@ for (dep_var in dependent_vars) {
           legend.position = "top",
           legend.text = element_text(size = 11))
 
+  p3 <- ggplot(data_subset_e, aes(x = estimate, y = term, color = duration_label)) +
+    geom_point(size = 3, shape = 15) +
+    geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+    geom_hline(yintercept = 12.5, color = "gray") +
+    geom_hline(yintercept = 9.5, color = "gray") +
+    geom_hline(yintercept = 6.5, color = "gray") +
+    geom_hline(yintercept = 3.5, color = "gray") +
+    geom_vline(xintercept = 1, linetype = "dashed", color = "red", alpha = 0.5) +
+    scale_colour_manual(name = "Duration HW:", values = c("#e59866", "#d35400", "#873600"), na.value = "#6e2c00") +
+    scale_x_continuous(limits = c(0.4, 1.6)) +
+    geom_text(aes(x = text_x_position, label = paste0(format(round(estimate, 3), nsmall = 2), " (", 
+                                                      format(round(conf.low, 3), nsmall = 2), " - ", 
+                                                      format(round(conf.high, 3), nsmall = 2), ")")), 
+              position = position_dodge(width = 0.75), size = 3, show.legend = FALSE) + 
+    labs(title = NULL,
+         x = "HRs and 95% CI", 
+         y = "Heatwave Definition"
+         #tag = "C."
+        ) +
+    theme_light() +
+    theme(panel.grid = element_blank(),
+          legend.position = "top",
+          legend.text = element_text(size = 11))
+
   
-  p <- ggarrange(p1, p2, ncol = 2, common.legend = TRUE)
+  p4 <- ggplot(data_subset_min, aes(x = estimate, y = term, color = duration_label)) +
+    geom_point(size = 3, shape = 15) +
+    geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+    geom_hline(yintercept = 12.5, color = "gray") +
+    geom_hline(yintercept = 9.5, color = "gray") +
+    geom_hline(yintercept = 6.5, color = "gray") +
+    geom_hline(yintercept = 3.5, color = "gray") +
+    geom_vline(xintercept = 1, linetype = "dashed", color = "red", alpha = 0.5) +
+    scale_colour_manual(name = "Duration CW:", values = c("#1591ea", "#4052d6", "#00008a")) +
+    scale_x_continuous(limits = x_limits) +
+    geom_text(aes(x = text_x_position, label = paste0(format(round(estimate, 3), nsmall = 2), " (", 
+                                                      format(round(conf.low, 3), nsmall = 2), " - ", 
+                                                      format(round(conf.high, 3), nsmall = 2), ")")), 
+              position = position_dodge(width = 0.75), size = 3, show.legend = FALSE) + 
+    labs(title = NULL,
+         x = "HRs and 95% CI", 
+         y = "Heatwave Definition"
+         #tag = "D."
+        ) +
+    theme_light() +
+    theme(panel.grid = element_blank(),
+          legend.position = "top",
+          legend.text = element_text(size = 11))
   
-  
+  p <- ggarrange(p1, p2, ncol = 2, nrow = 1, common.legend = TRUE)
+
   plots[[dep_var]] <- p
+  plots2[[dep_var]] <- p3
+  plots3[[dep_var]] <- p4
 }
 
 # Save plots
@@ -278,6 +361,47 @@ ggsave(plots$birth_late_preterm,
        units = 'cm',
        scaling = 0.90,
        device = ragg::agg_png)
+
+plots2_save <- ggarrange(
+  plots2$birth_preterm + labs(title="PTB"),
+  plots2$birth_very_preterm + labs(title="Very PTB"),
+  plots2$birth_moderately_preterm + labs(title="Moderately PTB"),
+  plots2$birth_late_preterm + labs(title="Late PTB"), 
+  ncol=2, nrow=2, 
+  common.legend = TRUE
+)
+
+ggsave(plots2_save,
+  filename = paste0("Output/", "Models/", "PTB_COX_severity", ".png"), # "Preterm_trendsrm1991"
+  res = 300,
+  width = 30,
+  height = 25,
+  units = 'cm',
+  scaling = 0.90,
+  device = ragg::agg_png)
+
+plots3$birth_preterm
+plots3$birth_very_preterm
+plots3$birth_moderately_preterm
+plots3$birth_late_preterm
+
+plots3_save <- ggarrange(
+  plots3$birth_preterm + labs(title="PTB"),
+  plots3$birth_very_preterm + labs(title="Very PTB"),
+  plots3$birth_moderately_preterm + labs(title="Moderately PTB"),
+  plots3$birth_late_preterm + labs(title="Late PTB"), 
+  ncol=2, nrow=2, 
+  common.legend = TRUE
+)
+
+ggsave(plots3_save,
+  filename = paste0("Output/", "Models/", "PTB_COX_MIN", ".png"), # "Preterm_trendsrm1991"
+  res = 300,
+  width = 30,
+  height = 25,
+  units = 'cm',
+  scaling = 0.90,
+  device = ragg::agg_png)
 
 # Table with effects
 

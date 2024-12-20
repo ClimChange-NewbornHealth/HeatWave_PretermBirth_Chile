@@ -262,7 +262,7 @@ births <- births %>%
          age_group_dad,educ_group_dad,job_group_dad,
 ) 
 
-glimpse(births)
+glimpse(births) # 2,823,249
 
 ### 6. Exclusion criteria  -----
 
@@ -351,5 +351,5 @@ births <- births %>%
 glimpse(births)
 save(births, file=paste0(data_out, "births_1992_2020", ".RData"))
 
-# 4 semanas completas
+
 

@@ -140,11 +140,11 @@ dates_range <- function(dates) {
 births_last_month <- births %>%
   group_by(id) %>%  
   filter(week_gest_num > (max(week_gest_num) - 4)) %>%  
-  summarize(all_in_summer = dates_range(date_end_week), .groups = "drop") %>% 
-  filter(all_in_summer) %>%  
-  left_join(births, by = "id") %>% 
-  mutate(month_end_week = month(date_end_week))
-
+  mutate(month_end_week = month(date_end_week)) %>% 
+  mutate(year_end_week=year(date_end_week)) %>% 
+  filter(all(month_end_week %in% c(11, 12, 1, 2, 3))) %>% 
+  ungroup()
+ 
 save(births_last_month, file=paste0(data_out, "births_1992_2020_last_month", ".RData"))
 
 ## Last week  -> Nov, Dic, Ene, Feb, Mar
@@ -152,8 +152,9 @@ births_last_week <- births %>%
   group_by(id) %>%  
   filter(week_gest_num == max(week_gest_num)) %>%  
   ungroup() %>% 
-  mutate(month_end_week=month(date_end_week)) %>% 
-  filter(month_end_week %in% c(11, 12, 1, 2, 3))
+  mutate(month_end_week=month(date_end_week)) %>%
+  mutate(year_end_week=year(date_end_week)) %>%
+  filter(month_end_week %in% c(11, 12, 1, 2, 3)) 
 
 save(births_last_week, file=paste0(data_out, "births_1992_2020_last_week", ".RData"))
 
