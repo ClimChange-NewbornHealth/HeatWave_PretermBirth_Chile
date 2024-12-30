@@ -1,4 +1,4 @@
-# Code 5: Survival models lw ----
+# Code 6.2: Survival models last week by municipality ----
 
 rm(list=ls())
 ## Settings ----
