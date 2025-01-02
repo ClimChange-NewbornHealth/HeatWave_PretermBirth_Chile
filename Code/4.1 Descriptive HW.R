@@ -13,10 +13,7 @@ data_out <- "Data/Output/"
 
 # BW
 bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RData")) %>% drop_na()
-bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month_hw", ".RData")) %>% drop_na()
-bw_data_lmu <- bw_data_lm %>% distinct(id, .keep_all = TRUE)
 hw_data <- rio::import(paste0(data_out, "hw_data_1980_2021", ".RData"))
-
 
 # Adjust data 
 glimpse(bw_data_lw)
@@ -117,6 +114,7 @@ f1 <- ggplot(data_plot, aes(x = year_nac, y = value, color = variable, group = v
   ) +
   theme_light() +
   theme(legend.position="right",
+        legend.text = element_text(size=11),
         plot.title = element_text(hjust = 0.5),
         strip.background = element_rect(fill=NA, color="black"), 
         strip.text=element_text(color="black"),
@@ -369,7 +367,8 @@ ref_temp <- hw_data %>%
   summarise(p90_tmax=quantile(tmax, probs = 0.90, digits = 2),
             p95_tmax=quantile(tmax, probs = 0.95, digits = 2),
             p99_tmax=quantile(tmax, probs = 0.99, digits = 2), 
-            TAD=mean(TAD), 
+            TAD95=quantile(TAD, probs = 0.95, digits = 2, na.rm=TRUE),
+            TAD=mean(TAD, na.rm=TRUE), 
             EHIsigi_tad=mean(EHIsigi_tad, na.rm=TRUE), 
             EHIaccli_tad=mean(EHIaccli_tad, na.rm=TRUE), 
             EHF_tad=mean(EHF_tad, na.rm=TRUE), 
@@ -404,8 +403,477 @@ tmax_tmin_tad_table <- hw_data %>%
     .groups = "drop" 
   )
 
-  writexl::write_xlsx(tmax_tmin_tad_table, "Output/Descriptives/HW_TMIN_TMAX_TAD_com_1980_2021.xlsx")
+writexl::write_xlsx(tmax_tmin_tad_table, "Output/Descriptives/HW_TMIN_TMAX_TAD_com_1980_2021.xlsx")
 
 # MAPS
+glimpse(hw_data) 
+
+temp_maxs <- hw_data %>% 
+  filter(month %in% c(11, 12, 1, 2, 3)) %>% 
+  group_by(com) %>% 
+  summarise(
+    p90 = quantile(tmax, probs = 0.90),
+    p95 = quantile(tmax, probs = 0.95),
+    p99 = quantile(tmax, probs = 0.99)
+  )
+
+stgo <- mapa_comunas %>% 
+  filter(codigo_region == 13) %>% 
+  left_join(
+    codigos_territoriales %>% 
+      select(matches("comuna"))
+  ) %>% 
+  mutate(codigo_comuna=as.numeric(codigo_comuna)) %>% 
+  left_join(temp_maxs, by=c("codigo_comuna"="com"))
+  
+
+p90 <- stgo %>% 
+  filter(codigo_comuna %in% zip) %>% 
+  ggplot() +
+  geom_sf(aes(fill=p90, geometry = geometry)) +
+  #geom_sf_label(aes(label = nombre_comuna, geometry = geometry), size=3) +
+  labs(y=NULL, x=NULL, title = "90th percentile") +
+  scale_fill_fermenter(palette = "Oranges", direction = 1, name=NULL, 
+                       n.breaks = 8, limits = c(20, 35)) +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0),
+    strip.background = element_rect(fill = NA, color = "black"),
+    strip.text = element_text(color = "black"),
+    panel.grid = element_blank(), 
+    legend.position = "right"
+  ))
+
+p95 <- stgo %>% 
+  filter(codigo_comuna %in% zip) %>% 
+  ggplot() +
+  geom_sf(aes(fill=p95, geometry = geometry)) +
+  #geom_sf_label(aes(label = nombre_comuna, geometry = geometry), size=3) +
+  labs(y=NULL, x=NULL, title = "95th percentile") +
+  scale_fill_fermenter(palette = "Oranges", direction = 1, name=NULL, 
+                       n.breaks = 8, limits = c(20, 35)) +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0),
+    strip.background = element_rect(fill = NA, color = "black"),
+    strip.text = element_text(color = "black"),
+    panel.grid = element_blank(), 
+    legend.position = "right"
+  ))
+  
+p99 <- stgo %>% 
+  filter(codigo_comuna %in% zip) %>% 
+  ggplot() +
+  geom_sf(aes(fill=p90, geometry = geometry)) +
+  #geom_sf_label(aes(label = nombre_comuna, geometry = geometry), size=3) +
+  labs(y=NULL, x=NULL, title = "99th percentile") +
+  scale_fill_fermenter(palette = "Oranges", direction = 1, name=NULL, 
+                       n.breaks = 8, limits = c(20, 35)) +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0),
+    strip.background = element_rect(fill = NA, color = "black"),
+    strip.text = element_text(color = "black"),
+    panel.grid = element_blank(), 
+    legend.position = "right"
+  ))
 
 
+ggsave(p90,
+  filename = paste0("Output/", "Descriptives/", "MAP_P90", ".png"), 
+  res = 300,
+  width = 15,
+  height = 10,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+ggsave(p95,
+  filename = paste0("Output/", "Descriptives/", "MAP_P95", ".png"), 
+  res = 300,
+  width = 15,
+  height = 10,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+ggsave(p99,
+  filename = paste0("Output/", "Descriptives/", "MAP_P99", ".png"), 
+  res = 300,
+  width = 15,
+  height = 10,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+plots_save <- (p90 / p95 / p99) + plot_layout(guides = "collect") & 
+  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+plots_save
+
+ggsave(plots_save,
+  filename = paste0("Output/", "Descriptives/", "MAP_TMAX", ".png"), 
+  res = 300,
+  width = 18,
+  height = 25,
+  units = 'cm',
+  scaling = 1,
+  device = ragg::agg_png)  
+  
+
+hws <- bw_data_lw %>% 
+  group_by(com) %>% 
+  summarise(
+    hw_2d = mean(HW_EHF_TAD_2d_count, na.rm = TRUE),
+    hw_3d = mean(HW_EHF_TAD_3d_count, na.rm = TRUE),
+    hw_4d = mean(HW_EHF_TAD_4d_count, na.rm = TRUE),
+    p90_2d = mean(HW_p90_2d_count, na.rm = TRUE),
+    p90_3d = mean(HW_p90_3d_count, na.rm = TRUE),
+    p90_4d = mean(HW_p90_4d_count, na.rm = TRUE),
+    p95_2d = mean(HW_p95_2d_count, na.rm = TRUE),
+    p95_3d = mean(HW_p95_3d_count, na.rm = TRUE),
+    p95_4d = mean(HW_p95_4d_count, na.rm = TRUE),
+    p99_2d = mean(HW_p99_2d_count, na.rm = TRUE),
+    p99_3d = mean(HW_p99_3d_count, na.rm = TRUE),
+    p99_4d = mean(HW_p99_4d_count, na.rm = TRUE)
+  )
+
+stgo <- mapa_comunas %>% 
+  filter(codigo_region == 13) %>% 
+  left_join(
+    codigos_territoriales %>% 
+      select(matches("comuna"))
+  ) %>% 
+  mutate(codigo_comuna=as.numeric(codigo_comuna)) %>% 
+  left_join(hws, by=c("codigo_comuna"="com"))
+
+hw2 <- stgo %>% 
+  filter(codigo_comuna %in% zip) %>% 
+  ggplot() +
+  geom_sf(aes(fill=hw_2d, geometry = geometry)) +
+  labs(y=NULL, x=NULL, title = "HW EHF 2 days") +
+  scale_fill_fermenter(palette = "Oranges", direction = 1, name=NULL, 
+                       n.breaks = 8, limits = c(0, 7)) +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0),
+    strip.background = element_rect(fill = NA, color = "black"),
+    strip.text = element_text(color = "black"),
+    panel.grid = element_blank(), 
+    legend.position = "right"
+  ))
+
+hw2
+
+hw3 <- stgo %>% 
+  filter(codigo_comuna %in% zip) %>% 
+  ggplot() +
+  geom_sf(aes(fill=hw_3d, geometry = geometry)) +
+  labs(y=NULL, x=NULL, title = "HW EHF 3 days") +
+  scale_fill_fermenter(palette = "Oranges", direction = 1, name=NULL, 
+                       n.breaks = 8, limits = c(0, 7)) +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0),
+    strip.background = element_rect(fill = NA, color = "black"),
+    strip.text = element_text(color = "black"),
+    panel.grid = element_blank(), 
+    legend.position = "right"
+  ))
+
+hw3
+
+hw4 <- stgo %>% 
+  filter(codigo_comuna %in% zip) %>% 
+  ggplot() +
+  geom_sf(aes(fill=hw_4d, geometry = geometry)) +
+  labs(y=NULL, x=NULL, title = "HW EHF 4 days") +
+  scale_fill_fermenter(palette = "Oranges", direction = 1, name=NULL, 
+                       n.breaks = 8, limits = c(0, 7)) +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0),
+    strip.background = element_rect(fill = NA, color = "black"),
+    strip.text = element_text(color = "black"),
+    panel.grid = element_blank(), 
+    legend.position = "right"
+  ))
+
+hw4
+
+ggsave(hw2,
+  filename = paste0("Output/", "Descriptives/", "MAP_EHF2", ".png"), 
+  res = 300,
+  width = 15,
+  height = 10,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+ggsave(hw3,
+  filename = paste0("Output/", "Descriptives/", "MAP_EHF3", ".png"), 
+  res = 300,
+  width = 15,
+  height = 10,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+ggsave(hw4,
+  filename = paste0("Output/", "Descriptives/", "MAP_EHF4", ".png"), 
+  res = 300,
+  width = 15,
+  height = 10,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+plots_save <- (hw2 / hw3 / hw4) + plot_layout(guides = "collect") & 
+  theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+plots_save
+
+ggsave(plots_save,
+  filename = paste0("Output/", "Descriptives/", "MAP_EHF", ".png"), 
+  res = 300,
+  width = 18,
+  height = 25,
+  units = 'cm',
+  scaling = 1,
+  device = ragg::agg_png)  
+
+
+# HEAT MAP Number of HW across time
+glimpse(bw_data_lw)
+
+h_service <- rio::import("Data/Input/Health_service_municipality.xlsx") %>% select(-name_com)
+
+heat_table <- bw_data_lw %>% 
+  mutate(
+    summer_year = case_when(
+      month_end_week %in% c(11, 12) ~ paste0(year_end_week),               # Noviembre y Diciembre del mismo año
+      month_end_week %in% c(1, 2, 3) ~ paste0(year_end_week - 1),          # Enero, Febrero y Marzo del año siguiente
+      TRUE ~ NA_character_                                                 
+    )) %>% 
+  group_by(com, name_com, summer_year) %>% 
+  summarise(
+            HW_30C_3d_count=max(HW_30C_3d_count, na.rm = TRUE), 
+            HW_p90_3d_count=max(HW_p90_3d_count, na.rm = TRUE), 
+            HW_p95_3d_count=max(HW_p95_3d_count, na.rm = TRUE), 
+            HW_p99_3d_count=max(HW_p99_3d_count, na.rm = TRUE), 
+            HW_EHF_TAD_3d_count=max(HW_EHF_TAD_3d_count, na.rm = TRUE)
+            ) %>% 
+  ungroup() %>% 
+  filter(summer_year != "2020") %>% 
+  left_join(h_service, by="com") %>% 
+    mutate(
+      name_com = fct_reorder(name_com, com), # Ordenar comunas por código postal
+      service = factor(service, levels = c("North", "Central", "East", "Southeast", "South", "West")) # Orden geográfico
+    )
+
+g1 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_30C_3d_count)) +
+  geom_tile(colour = "white") +
+  scale_fill_gradientn(
+    colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
+    breaks = 0:7, # Valores discretos en la leyenda
+    limits = c(0, 7), # Límite del rango
+    guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
+  ) +
+  labs(x = NULL, y = "Municipality", 
+        title="A. HW 30 3D") +
+  facet_grid(service~., scales = "free", space = "free",  switch = "y") +
+  theme_light() +
+  theme(
+    legend.position = "top", 
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+    plot.margin = margin(t = 10, r = 10, b = 5, l = 10),
+    panel.grid = element_blank(),
+    strip.text.y = element_text(angle = 0),
+    strip.background = element_rect(fill=NA, color="gray70"), 
+    strip.text=element_text(color="black"),
+    strip.text.y.left = element_text(angle = 0)
+  )
+
+g1
+
+ggsave(g1,
+  filename = paste0("Output/", "Descriptives/", "HEATMAP_30C", ".png"), 
+  res = 300,
+  width = 20,
+  height = 14,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+g2 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_p90_3d_count)) +
+  geom_tile(colour = "white") +
+  scale_fill_gradientn(
+    colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
+    breaks = 0:7, # Valores discretos en la leyenda
+    limits = c(0, 7), # Límite del rango
+    guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
+  ) +
+  labs(x = NULL, y = "Municipality", 
+        title="B. HW P90 3D") +
+  facet_grid(service~., scales = "free", space = "free",  switch = "y") +
+  theme_light() +
+  theme(
+    legend.position = "top", 
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+    plot.margin = margin(t = 10, r = 10, b = 5, l = 10),
+    panel.grid = element_blank(),
+    strip.text.y = element_text(angle = 0),
+    strip.background = element_rect(fill=NA, color="gray70"), 
+    strip.text=element_text(color="black"),
+    strip.text.y.left = element_text(angle = 0)
+  )
+
+g2
+
+ggsave(g2,
+  filename = paste0("Output/", "Descriptives/", "HEATMAP_P90", ".png"), 
+  res = 300,
+  width = 20,
+  height = 14,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+g3 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_p95_3d_count)) +
+  geom_tile(colour = "white") +
+  scale_fill_gradientn(
+    colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
+    breaks = 0:7, # Valores discretos en la leyenda
+    limits = c(0, 7), # Límite del rango
+    guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
+  ) +
+  labs(x = NULL, y = "Municipality", 
+        title="C. HW P95 3D") +
+  facet_grid(service~., scales = "free", space = "free",  switch = "y") +
+  theme_light() +
+  theme(
+    legend.position = "top", 
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+    plot.margin = margin(t = 10, r = 10, b = 5, l = 10),
+    panel.grid = element_blank(),
+    strip.text.y = element_text(angle = 0),
+    strip.background = element_rect(fill=NA, color="gray70"), 
+    strip.text=element_text(color="black"),
+    strip.text.y.left = element_text(angle = 0)
+  )
+
+g3
+
+ggsave(g3,
+  filename = paste0("Output/", "Descriptives/", "HEATMAP_P95", ".png"), 
+  res = 300,
+  width = 20,
+  height = 14,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+
+g4 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_p99_3d_count)) +
+  geom_tile(colour = "white") +
+  scale_fill_gradientn(
+    colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
+    breaks = 0:7, # Valores discretos en la leyenda
+    limits = c(0, 7), # Límite del rango
+    guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
+  ) +
+  labs(x = NULL, y = "Municipality", 
+        title="D. HW P99 3D") +
+  facet_grid(service~., scales = "free", space = "free",  switch = "y") +
+  theme_light() +
+  theme(
+    legend.position = "top", 
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+    plot.margin = margin(t = 10, r = 10, b = 5, l = 10),
+    panel.grid = element_blank(),
+    strip.text.y = element_text(angle = 0),
+    strip.background = element_rect(fill=NA, color="gray70"), 
+    strip.text=element_text(color="black"),
+    strip.text.y.left = element_text(angle = 0)
+  )
+
+g4
+
+ggsave(g4,
+  filename = paste0("Output/", "Descriptives/", "HEATMAP_P99", ".png"), 
+  res = 300,
+  width = 20,
+  height = 14,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+
+g5 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_EHF_TAD_3d_count)) +
+  geom_tile(colour = "white") +
+  scale_fill_gradientn(
+    colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
+    breaks = 0:7, # Valores discretos en la leyenda
+    limits = c(0, 7), # Límite del rango
+    guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
+  ) +
+  labs(x = NULL, y = "Municipality", 
+        title="HW EHF 3D") +
+  facet_grid(service~., scales = "free", space = "free",  switch = "y") +
+  theme_light() +
+  theme(
+    legend.position = "top", 
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+    plot.margin = margin(t = 10, r = 10, b = 5, l = 10),
+    panel.grid = element_blank(),
+    strip.text.y = element_text(angle = 0),
+    strip.background = element_rect(fill=NA, color="gray70"), 
+    strip.text=element_text(color="black"),
+    strip.text.y.left = element_text(angle = 0)
+  )
+
+g5
+
+ggsave(g5,
+  filename = paste0("Output/", "Descriptives/", "HEATMAP_EHF", ".png"), 
+  res = 300,
+  width = 20,
+  height = 14,
+  units = 'cm',
+  scaling = 0.8,
+  device = ragg::agg_png)  
+
+plots_save <- ggarrange(g1, g2, g3, g4, nrow=2, ncol=2, common.legend = TRUE)
+plots_save
+
+ggsave(plots_save,
+  filename = paste0("Output/", "Descriptives/", "HEATMAP_HW", ".png"), 
+  res = 300,
+  width = 40,
+  height = 25,
+  units = 'cm',
+  scaling = 1,
+  device = ragg::agg_png)  
+
+ggsave(ggarrange(g1, g2, nrow=2, ncol=1, common.legend = TRUE),
+  filename = paste0("Output/", "Descriptives/", "HEATMAP_HW_row1", ".png"), 
+  res = 300,
+  width = 30,
+  height = 30,
+  units = 'cm',
+  scaling = 1,
+  device = ragg::agg_png)  
+
+ggsave(ggarrange(g3, g4, nrow=2, ncol=1, common.legend = TRUE),
+  filename = paste0("Output/", "Descriptives/", "HEATMAP_HW_row2", ".png"), 
+  res = 300,
+  width = 30,
+  height = 30,
+  units = 'cm',
+  scaling = 1,
+  device = ragg::agg_png)  
