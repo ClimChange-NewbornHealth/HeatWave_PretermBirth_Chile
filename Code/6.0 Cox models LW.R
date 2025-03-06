@@ -87,6 +87,8 @@ results_cox <- bind_rows(results_list)
 
 writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models_lw", ".xlsx"))
 
+results_cox <- rio::import(paste0("Output/", "Models/", "Cox_models_lw", ".xlsx"))
+
 ## Plots with HW Effects COX Models ---- 
 
 #sev <- c(
@@ -191,9 +193,9 @@ for (dep_var in dependent_vars) {
 # Save plots
 
 plots$birth_preterm + labs(title = "A. Preterm (<37 weeks) last week")
-plots$birth_very_preterm + labs(title = "B. Very Preterm (28-32 weeks)")
+plots$birth_late_preterm + labs(title = "B. Late Preterm (34-37 weeks)")
 plots$birth_moderately_preterm + labs(title = "C. Moderately Preterm (32-33 weeks)")
-plots$birth_late_preterm + labs(title = "D. Late Preterm (34-37 weeks)")
+plots$birth_very_preterm + labs(title = "D. Very Preterm (28-32 weeks)")
 
 ggsave(plots$birth_preterm + labs(title = "A. Preterm (<37 weeks)"),
        filename = paste0("Output/", "Models/", "PTB_COX", ".png"), # "Preterm_trendsrm1991"
@@ -204,14 +206,14 @@ ggsave(plots$birth_preterm + labs(title = "A. Preterm (<37 weeks)"),
        scaling = 0.90,
        device = ragg::agg_png)
 
-ggsave(plots$birth_very_preterm + labs(title = "B. Very Preterm (28-32 weeks)"),
-  filename = paste0("Output/", "Models/", "PTB_very_COX", ".png"), # "Preterm_trendsrm1991"
-  res = 300,
-  width = 20,
-  height = 15,
-  units = 'cm',
-  scaling = 0.90,
-  device = ragg::agg_png)
+ggsave(plots$birth_late_preterm + labs(title = "B. Late Preterm (34-37 weeks)"),
+       filename = paste0("Output/", "Models/", "PTB_late_COX", ".png"), # "Preterm_trendsrm1991"
+       res = 300,
+       width = 15,
+       height = 15,
+       units = 'cm',
+       scaling = 1,
+       device = ragg::agg_png)
 
 ggsave(plots$birth_moderately_preterm + labs(title = "C. Moderately Preterm (32-33 weeks)"),
   filename = paste0("Output/", "Models/", "PTB_moderate_COX", ".png"), # "Preterm_trendsrm1991"
@@ -222,22 +224,23 @@ ggsave(plots$birth_moderately_preterm + labs(title = "C. Moderately Preterm (32-
   scaling = 0.90,
   device = ragg::agg_png)
 
-ggsave(plots$birth_late_preterm + labs(title = "D. Late Preterm (34-37 weeks)"),
-       filename = paste0("Output/", "Models/", "PTB_late_COX", ".png"), # "Preterm_trendsrm1991"
-       res = 300,
-       width = 15,
-       height = 15,
-       units = 'cm',
-       scaling = 1,
-       device = ragg::agg_png)
+ggsave(plots$birth_very_preterm + labs(title = "D. Very Preterm (28-32 weeks)"),
+  filename = paste0("Output/", "Models/", "PTB_very_COX", ".png"), # "Preterm_trendsrm1991"
+  res = 300,
+  width = 20,
+  height = 15,
+  units = 'cm',
+  scaling = 0.90,
+  device = ragg::agg_png)
+
 
 #  Save all plots
 
 plots_save <- ggarrange(
   plots$birth_preterm + labs(title = "A. Preterm (<37 weeks)"),
-  plots$birth_very_preterm + labs(title = "B. Very Preterm (28-32 weeks)"),
+  plots$birth_late_preterm + labs(title = "B. Late Preterm (34-37 weeks)"),
   plots$birth_moderately_preterm + labs(title = "C. Moderately Preterm (32-33 weeks)"),
-  plots$birth_late_preterm + labs(title = "D. Late Preterm (34-37 weeks)"),
+  plots$birth_very_preterm + labs(title = "D. Very Preterm (28-32 weeks)"),
   ncol=2, nrow=2, 
   common.legend = TRUE
 )

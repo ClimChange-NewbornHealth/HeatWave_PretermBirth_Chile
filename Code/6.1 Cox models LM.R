@@ -11,8 +11,8 @@ data_out <- "Data/Output/"
 
 ## Data ---- 
 
-dependent_vars <- c("birth_preterm"
-                    #, "birth_very_preterm", "birth_moderately_preterm", "birth_late_preterm"
+dependent_vars <- c("birth_preterm",
+                    "birth_very_preterm", "birth_moderately_preterm", "birth_late_preterm"
                   ) # , "birth_term", "birth_posterm"
 
 heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin", 
@@ -88,6 +88,7 @@ results_cox <- bind_rows(results_list)
 
 writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models_lm", ".xlsx"))
 
+#results_cox <- rio::import(paste0("Output/", "Models/", "Cox_models_lm", ".xlsx"))
 
 ## Plots with HW Effects COX Models ---- 
 
@@ -188,15 +189,15 @@ plots[[dep_var]] <- p
 # Save plots
 
 plots$birth_preterm + labs(title = "A. Preterm (<37 weeks)")
-plots$birth_very_preterm + labs(title = "B. Very Preterm (28-32 weeks)")
+plots$birth_late_preterm + labs(title = "B. Late Preterm (34-37 weeks)")
 plots$birth_moderately_preterm + labs(title = "C. Moderately Preterm (32-33 weeks)")
-plots$birth_late_preterm + labs(title = "D. Late Preterm (34-37 weeks)")
+plots$birth_very_preterm + labs(title = "D. Very Preterm (28-32 weeks)")
 
 plots_save <- ggarrange(
 plots$birth_preterm + labs(title = "A. Preterm (<37 weeks)"),
-plots$birth_very_preterm + labs(title = "B. Very Preterm (28-32 weeks)"),
+plots$birth_late_preterm + labs(title = "B. Late Preterm (34-37 weeks)"),
 plots$birth_moderately_preterm + labs(title = "C. Moderately Preterm (32-33 weeks)"),
-plots$birth_late_preterm + labs(title = "D. Late Preterm (34-37 weeks)"),
+plots$birth_very_preterm + labs(title = "D. Very Preterm (28-32 weeks)"),
 ncol=2, nrow=2, 
 common.legend = TRUE
 )

@@ -74,5 +74,12 @@ install_load(c("rio",
                "ggsurvfit",
                "RColorBrewer", 
                "coxme",
-               "corrr"
+               "corrr",
+               "rnaturalearth", 
+               "rnaturalearthdata",
+               "ggforce",
+               "ggspatial", 
+               "ggmapinset",
+               "gridExtra",
+               "ggrepel"
                ))
