@@ -1,4 +1,4 @@
-# Extreme Heat and Preterm Birth Risk: Insights from Chilean Birth Data (1993-2020)
+# Heat Beyond Percentiles: Exploring Risk of Preterm Birth in Santiago, Chile (1992-2020) Using a Novel Metric
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/ClimChange-NewbornHealth/HeatWave_PretermBirth_Chile)
 ![GitHub watchers](https://img.shields.io/github/watchers/ClimChange-NewbornHealth/HeatWave_PretermBirth_Chile)
@@ -12,13 +12,12 @@
 ![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/ClimChange-NewbornHealth/HeatWave_PretermBirth_Chile)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ClimChange-NewbornHealth/HeatWave_PretermBirth_Chile)
 
-**Fondecyt Nº 11240322**: Climate change and urban health: how air pollution, temperature, and city structure relate to preterm birth.
+**Fondecyt Nº 11240322**: Climate change and urban health: how air pollution, temperature, and city structure relate to preterm birth
 
-:moneybag: Funding: Fondecyt de Iniciación en Investigación Nº 11240322. Año 2024.
+:moneybag: Funding: Fondecyt de Iniciación en Investigación Nº 11240322
 
-:mailbox_with_mail: Estela Blanco (<estela.blanco@uc.cl>) - **Principal Researcher**
+:mailbox_with_mail: Estela Blanco (<estela.blanco@uc.cl>) - **Principal Investigator**
 
-:mailbox_with_mail: Álvaro González-Reyes (<alvaro.gonzalez@uach.cl>) - **Principal Researcher**
+:mailbox_with_mail: José Daniel Conejeros (<jdconejeros@uc.cl>) - **Research Assistant / Repository Manager**
 
-:mailbox_with_mail: José Daniel Conejeros (<jdconejeros@uc.cl>) - **Research Assistant**
-
+**Research Collaborators**: 💪 Álvaro González-Reyes, 💪 Pamela Smith, 💪 Paola Rubilar, & 💪 Pablo Sarricolea
