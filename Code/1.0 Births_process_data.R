@@ -337,7 +337,7 @@ births <- births %>%
 # End sample 2,823,249 - 2,822,335 -> 914
 nrow(births)
 
-### 7. Outcome: preterm (2,822,335) ---- 
+### 7. Outcome: preterm (2,823,249) ---- 
 births <- births %>% 
   mutate(birth_preterm = if_else(weeks < 37, 1, 0)) %>%
   #mutate(birth_extremely_preterm = if_else(weeks < 28, 1, 0)) %>% 
@@ -347,7 +347,25 @@ births <- births %>%
   mutate(birth_term = if_else(weeks >= 37 & weeks <42, 1, 0)) %>% 
   mutate(birth_posterm = if_else(weeks >= 42, 1, 0))
 
-### 8.  Save new births data ----
+### 8.  Fixed cohort Bias ----
+# N=2,823,249
+
+date_last_week <- as.Date("2020-12-31") - weeks(42) # 42 weeks
+date_last_week
+
+births <- births |> 
+  filter(date_start_week_gest >= as.Date("1991-01-01"))
+
+# N=2,822,335
+
+births <- births |> 
+  filter(date_ends_week_gest <= date_last_week)
+
+# N=2,760,141
+nrow(births)
+summary(births)
+
+### 9.  Save new births data ----
 glimpse(births)
 save(births, file=paste0(data_out, "births_1992_2020", ".RData"))
 

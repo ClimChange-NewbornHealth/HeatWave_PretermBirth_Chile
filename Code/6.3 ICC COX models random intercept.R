@@ -49,8 +49,8 @@ tic()
 model_null <- coxme(formula, data = bw_data_lw) 
 toc() # 22.53 sec
   
-calculate_icc(model_null) # ICC: 0.007460797 -  0.75% explained variance by nested municipality 
-as.numeric(VarCorr(model_null)$name_com[1]) # 0.01236477 ~ 0
+calculate_icc(model_null) # ICC: 0.007529601 -  0.75% explained variance by nested municipality 
+as.numeric(VarCorr(model_null)$name_com[1]) # 0.01247966 ~ 0
 
 # Second model and ICC: full model
 formula <- as.formula(paste("Surv(weeks, ", dependent_vars, ") ~ ", heatwave_vars[15], 
@@ -65,8 +65,8 @@ toc() # 188.009 sec ~ 3 min
 
 model_fit 
 
-calculate_icc(model_fit) # 0.006277009 ~ 0.6% explained variance by nested municipality 
-as.numeric(VarCorr(model_fit)$name_com[1]) # 0.01039049 ~ 0
+calculate_icc(model_fit) # 0.00635293 ~ 0.6% explained variance by nested municipality 
+as.numeric(VarCorr(model_fit)$name_com[1]) # 0.01051697~ 0
 
 # Compare with not random effects
 formula <- as.formula(paste("Surv(weeks, ", dependent_vars, ") ~ ", heatwave_vars[15], 
@@ -79,9 +79,9 @@ model_fit_wre <- coxph(formula, data = bw_data_lw)
 toc() # 188.009 sec ~ 3 min 
 
 # Comparision models 
-AIC(model_fit) # 1603809
-AIC(model_fit_wre) # 1604265
+AIC(model_fit) # 1578467
+AIC(model_fit_wre) # 1578923
 
-BIC(model_fit) # 1604518
-BIC(model_fit_wre) # 1604723
+BIC(model_fit) # 1579174
+BIC(model_fit_wre) #1579380 
 
