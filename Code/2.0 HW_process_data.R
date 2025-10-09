@@ -221,48 +221,48 @@ summary(hw_data)
 # Function to estimate EHIsigi, EHIaccli and EHF with p95 by com for n_days
 EHF <- function(data, tmax_col, tmin_col, date_col, p_col, n_days = 3, period_days = 30) {
   
-  # Verificar columnas
+  # Verify columns
   required_cols <- c(tmax_col, tmin_col, date_col, p_col)
   if (!all(required_cols %in% colnames(data))) {
-    stop("Error: Una o más columnas especificadas no existen en los datos.")
+    stop("Error: Columns that not exist.")
   }
   
-  # Ordenar los datos por fecha para asegurar la secuencia
+  # Arrange data 
   data <- data %>% arrange(.data[[date_col]])
   
-  # Calcular temperatura media ajustada (tad)
+  # TAD
   data <- data %>%
     mutate(
       TAD = (get(tmax_col) + lead(get(tmin_col), default = NA)) / 2
     )
   
-  # Calcular TAD_p95 por grupo y agregarlo al marco de datos original
+  # P95 TAD
   data <- data %>%
     group_by(com) %>%
     mutate(TAD_p95 = quantile(TAD, probs = 0.95, na.rm = TRUE)) %>%
-    ungroup() # Eliminar agrupamiento para cálculos posteriores
+    ungroup() # remove groups
   
-  # Calcular EHIsigi, EHIaccli y EHF para `TAD` y `tmax`
+  # EHIsigi, EHIaccli y EHF 
   data <- data %>%
     mutate(
-      # EHIsigi para TAD
+      # EHIsigi - TAD
       EHIsigi_tad = rowMeans(sapply(0:(n_days - 1), function(i) lag(TAD, i)), na.rm = TRUE) - TAD_p95,
       
-      # EHIaccli para TAD
+      # EHIaccli - TAD
       EHIaccli_tad = rowMeans(sapply(0:(n_days - 1), function(i) lag(TAD, i)), na.rm = TRUE) - 
                      rollmean(TAD, period_days, align = "right", fill = NA),
       
-      # EHF para TAD
+      # EHF - TAD
       EHF_tad = EHIsigi_tad * pmax(1, EHIaccli_tad),
       
-      # EHIsigi para tmax
+      # EHIsigi - TMAX
       EHIsigi_tmax = rowMeans(sapply(0:(n_days - 1), function(i) lag(.data[[tmax_col]], i)), na.rm = TRUE) - .data[[p_col]],
       
-      # EHIaccli para tmax
+      # EHIaccli - TMAX
       EHIaccli_tmax = rowMeans(sapply(0:(n_days - 1), function(i) lag(.data[[tmax_col]], i)), na.rm = TRUE) - 
                       rollmean(.data[[tmax_col]], period_days, align = "right", fill = NA),
       
-      # EHF para tmax
+      # EHF - TMAX
       EHF_tmax = EHIsigi_tmax * pmax(1, EHIaccli_tmax)
     )
   
