@@ -14,6 +14,7 @@ data_sovi <- "Data/Input/SOVI/"
 
 # HW 
 hw_data <- rio::import(paste0(data_out, "hw_data_1980_2021", ".RData"))
+#hw_data <- rio::import(paste0(data_out, "hw_data_1980_2021_summer", ".RData"))
 
 # BW
 bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month", ".RData"))
@@ -288,3 +289,6 @@ summary(bw_data_lw_joined)
 # Save data
 save(bw_data_lm_joined, file=paste0(data_out, "births_1992_2020_last_month_hw", ".RData"))
 save(bw_data_lw_joined, file=paste0(data_out, "births_1992_2020_last_week_hw", ".RData"))
+
+#save(bw_data_lm_joined, file=paste0(data_out, "births_1992_2020_last_month_hw_summer", ".RData"))
+#save(bw_data_lw_joined, file=paste0(data_out, "births_1992_2020_last_week_hw_summer", ".RData"))

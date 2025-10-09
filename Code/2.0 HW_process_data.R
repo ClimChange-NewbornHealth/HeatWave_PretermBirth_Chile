@@ -99,12 +99,19 @@ glimpse(temp)
 
 rm(metadata, tmin, tmax, com)
 
+temp %>% 
+  filter(month %in% c(11, 12, 1, 2, 3)) %>% 
+  ggplot(aes(x = tmax)) +
+  geom_histogram(position = "identity", alpha = 0.35, binwidth = 0.5)
+
+
 ## HW data ---- 
 
 # Compare tempeture # 1980-01-01 - 2021-12-31
 summary(temp)
 
 ref_temp <- temp %>% 
+  # filter(month %in% c(11, 12, 1, 2, 3)) %>% 
   group_by(com) %>% 
   summarise(t30=30,
             t31=31,
@@ -130,6 +137,7 @@ table_temp <- chilemapas::codigos_territoriales |>
 table_temp <- table_temp %>% relocate(lat, long, sup, .after=nombre_region)
 
 writexl::write_xlsx(table_temp, "Output/Descriptives/Ref_tmin_tmax_com_1980_2021.xlsx")
+#writexl::write_xlsx(table_temp, "Output/Descriptives/Ref_tmin_tmax_com_1980_2021_summer.xlsx")
 
 # Join both tables
 temp <- temp %>% 
@@ -303,4 +311,5 @@ hw_data <- hw_data %>%
     )
 
 save(hw_data, file=paste0(data_out, "hw_data_1980_2021", ".RData"))
+#save(hw_data, file=paste0(data_out, "hw_data_1980_2021_summer", ".RData"))
 

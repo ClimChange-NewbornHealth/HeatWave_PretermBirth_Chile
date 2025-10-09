@@ -22,6 +22,9 @@ heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin",
 results_cox_lw <- rio::import(paste0("Output/", "Models/", "Cox_models_lw", ".xlsx"))
 results_cox_lm <- rio::import(paste0("Output/", "Models/", "Cox_models_lm", ".xlsx"))
 
+#results_cox_lw <- rio::import(paste0("Output/", "Models/", "Cox_models_lw_summer", ".xlsx"))
+#results_cox_lm <- rio::import(paste0("Output/", "Models/", "Cox_models_lm_summer", ".xlsx"))
+
 results_cox_lw <- results_cox_lw %>%
   filter(term %in% c(heatwave_vars), 
     dependent_var %in% dependent_vars) %>% 

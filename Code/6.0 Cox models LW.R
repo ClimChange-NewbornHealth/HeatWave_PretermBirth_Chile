@@ -30,6 +30,7 @@ control_vars <- c("weeks", "sex", "age_group_mom", "educ_group_mom", "job_group_
 # LW
 
 bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw", ".RData")) %>% drop_na()
+#bw_data_lw <- rio::import(paste0(data_out, "births_1992_2020_last_week_hw_summer", ".RData")) %>% drop_na()
 
 bw_data_lw <- bw_data_lw %>% 
   dplyr::select(all_of(c("id", dependent_vars, heatwave_vars, control_vars
@@ -86,6 +87,7 @@ plan(sequential)
 results_cox <- bind_rows(results_list)
 
 writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models_lw", ".xlsx"))
+#writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models_lw_summer", ".xlsx"))
 
 results_cox <- rio::import(paste0("Output/", "Models/", "Cox_models_lw", ".xlsx"))
 

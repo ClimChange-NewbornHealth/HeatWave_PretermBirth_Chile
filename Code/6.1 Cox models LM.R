@@ -32,6 +32,7 @@ gc() # Clean memory
 
 # Load large table 
 bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month_hw", ".RData")) %>% drop_na()
+#bw_data_lm <- rio::import(paste0(data_out, "births_1992_2020_last_month_hw_summer", ".RData")) %>% drop_na()
 
 bw_data_lm <- bw_data_lm %>% 
 dplyr::select(all_of(c("id", dependent_vars, heatwave_vars, control_vars
@@ -87,6 +88,7 @@ plan(sequential)
 results_cox <- bind_rows(results_list)
 
 writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models_lm", ".xlsx"))
+#writexl::write_xlsx(results_cox, path =  paste0("Output/", "Models/", "Cox_models_lm_summer", ".xlsx"))
 
 #results_cox <- rio::import(paste0("Output/", "Models/", "Cox_models_lm", ".xlsx"))
 
@@ -276,6 +278,6 @@ colnames(table_models) <- c("HR Definition",
                           "Moderate Preterm (32-33)",
                           "Late Preterm (34-37)")
 
-writexl::write_xlsx(table_models, path =  paste0("Output/", "Models/", "Table_COX_lm", ".xlsx"))
+writexl::write_xlsx(table_models, path =  paste0("Output/", "Models/", "Table_COX_lm_summer", ".xlsx"))
 
 
