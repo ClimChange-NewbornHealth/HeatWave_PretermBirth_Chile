@@ -159,5 +159,6 @@ ggsave(plots_save,
   height = 23,
   units = 'cm',
   scaling = 1.3,
+  bg = "white",
   device = ragg::agg_png)
 

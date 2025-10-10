@@ -104,14 +104,17 @@ temp %>%
   ggplot(aes(x = tmax)) +
   geom_histogram(position = "identity", alpha = 0.35, binwidth = 0.5)
 
-
 ## HW data ---- 
 
 # Compare tempeture # 1980-01-01 - 2021-12-31
 summary(temp)
 
+com <- chilemapas::codigos_territoriales 
+com_suburb <- c(unique(com$codigo_comuna[com$nombre_provincia=="Santiago"]), 13201) 
+
 ref_temp <- temp %>% 
-  # filter(month %in% c(11, 12, 1, 2, 3)) %>% 
+  filter(com %in% com_suburb) %>% 
+  #filter(month %in% c(11, 12, 1, 2, 3)) %>% 
   group_by(com) %>% 
   summarise(t30=30,
             t31=31,

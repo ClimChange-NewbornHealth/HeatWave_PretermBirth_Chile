@@ -26,7 +26,7 @@ heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin",
 
 control_vars <- c("weeks", "sex", "age_group_mom", "educ_group_mom", "job_group_mom",
     "age_group_dad", "educ_group_dad", "job_group_dad",
-    "year_nac", "vulnerability")
+    "year_nac", "vulnerability", "name_com")
 
 gc() # Clean memory
 
@@ -278,6 +278,6 @@ colnames(table_models) <- c("HR Definition",
                           "Moderate Preterm (32-33)",
                           "Late Preterm (34-37)")
 
-writexl::write_xlsx(table_models, path =  paste0("Output/", "Models/", "Table_COX_lm_summer", ".xlsx"))
+writexl::write_xlsx(table_models, path =  paste0("Output/", "Models/", "Table_COX_lm", ".xlsx"))
 
 

@@ -25,7 +25,7 @@ heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin",
 
 control_vars <- c("weeks", "sex", "age_group_mom", "educ_group_mom", "job_group_mom",
     "age_group_dad", "educ_group_dad", "job_group_dad",
-    "year_nac", "vulnerability")
+    "year_nac", "vulnerability", "name_com")
 
 # LW
 
