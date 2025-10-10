@@ -315,8 +315,8 @@ table <- bw_data_lw %>%
     ) %>%
    mutate(
     summer_year = case_when(
-      month_nac %in% c(11, 12) ~ paste0("Summer ", year_nac),               # Noviembre y Diciembre del mismo año
-      month_nac %in% c(1, 2, 3) ~ paste0("Summer ", year_nac - 1),          # Enero, Febrero y Marzo del año siguiente
+      month_nac %in% c(11, 12) ~ paste0("Summer ", year_nac),               # November and December of same year
+      month_nac %in% c(1, 2, 3) ~ paste0("Summer ", year_nac - 1),          # January, February and March of following year
       TRUE ~ NA_character_                                                 
     ),
     year_month = case_when(

@@ -63,7 +63,7 @@ bw_data_lw[, end := date_end_week]
 hw_data[, start := date]
 hw_data[, end := date]
 
-# Seteamos 
+# Set keys 
 setkey(hw_data, name_com, start, end)
 setkey(bw_data_lm, name_com, start, end)
 setkey(bw_data_lw, name_com, start, end)

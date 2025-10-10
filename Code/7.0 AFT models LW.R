@@ -62,23 +62,23 @@ cox.zph(m6) # Proportional risk assumption it's ok by heatwave variable, but not
 ## HR AFT Models LW ---- 
 rm(m1, m2, m3, m4, m5, m6)
 
-# Función para ajustar el modelo Weibull AFT y transformar a Hazard Ratios
+# Function to fit Weibull AFT model and transform to Hazard Ratios
 fit_weibull_aft <- function(dependent, predictor, data) {
-  # Fórmula del modelo
+  # Model formula
   formula <- as.formula(paste("Surv(weeks, ", dependent, ") ~ ", predictor, 
                               "+ sex + age_group_mom + educ_group_mom + job_group_mom +",
                               "age_group_dad + educ_group_dad + job_group_dad +",
                               "factor(year_nac) + vulnerability"))
   
-  # Ajuste del modelo Weibull
+  # Fit Weibull model
   model_fit <- survreg(formula, data = bw_data_lw, dist = "weibull")
   
-  # Transformar coeficientes a Hazard Ratios
-  scale <- model_fit$scale  # Parámetro de escala
+  # Transform coefficients to Hazard Ratios
+  scale <- model_fit$scale  # Scale parameter
   tidy_model <- broom::tidy(model_fit) %>%
     mutate(HR = exp(-estimate / scale),  # Hazard Ratio
-           conf.low = exp(-(estimate + 1.96 * std.error) / scale),  # Límite inferior del IC
-           conf.high = exp(-(estimate - 1.96 * std.error) / scale),  # Límite superior del IC
+           conf.low = exp(-(estimate + 1.96 * std.error) / scale),  # Lower CI limit
+           conf.high = exp(-(estimate - 1.96 * std.error) / scale),  # Upper CI limit
            estimate = round(estimate, 3),
            HR = round(HR, 3),
            conf.low = round(conf.low, 3),
@@ -91,7 +91,7 @@ fit_weibull_aft <- function(dependent, predictor, data) {
   rm(model_fit); gc()
 }
 
-# Aplicar la función con manejo de errores
+# Apply function with error handling
 plan(multisession, workers = parallel::detectCores() - 6)
 options(future.globals.maxSize = 3 * 1024^3)  # 1.5 GB
 
@@ -105,7 +105,7 @@ weibull_results <- future_lapply(seq_len(nrow(combinations)), function(i) {
 })
 toc() # time: 1333.067 sec elapsed, 22.21778 min 
 
-# Resultados para los modelos Weibull transformados a HRs
+# Results for Weibull models transformed to HRs
 results_aft <- c()
 results_aft <- results_aft %>% bind_rows(weibull_results)
 rm(weibull_results)

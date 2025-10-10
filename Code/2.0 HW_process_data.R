@@ -148,10 +148,10 @@ temp <- temp %>%
 
 # Apply HW definition -----
 detect_HW <- function(data){
-# Ordenar los datos por fecha para asegurar la secuencia
+# Sort the data by date to ensure sequence
   data <- data %>% arrange(date)
   
-# Crear columnas para cada criterio de ola de calor con tres días consecutivos
+# Create columns for each heat wave criterion with consecutive days
 data <- data %>%
   mutate(
     # Day with tmax > ref
@@ -210,7 +210,7 @@ data <- data %>%
     HW_p99_min_4d = +(lag(HW_day_min_p99, 3) + lag(HW_day_min_p99, 2) + lag(HW_day_min_p99, 1) + HW_day_min_p99 >= 4)
   ) %>%
   
-  # NA with begin serie
+  # Replace NA at beginning of series
   mutate(across(contains("HW_"), ~replace_na(., 0)))
 
 return(data)
@@ -227,7 +227,7 @@ EHF <- function(data, tmax_col, tmin_col, date_col, p_col, n_days = 3, period_da
   # Verify columns
   required_cols <- c(tmax_col, tmin_col, date_col, p_col)
   if (!all(required_cols %in% colnames(data))) {
-    stop("Error: Columns that not exist.")
+    stop("Error: Columns do not exist.")
   }
   
   # Arrange data 
@@ -243,7 +243,7 @@ EHF <- function(data, tmax_col, tmin_col, date_col, p_col, n_days = 3, period_da
   data <- data %>%
     group_by(com) %>%
     mutate(TAD_p95 = quantile(TAD, probs = 0.95, na.rm = TRUE)) %>%
-    ungroup() # remove groups
+    ungroup() # Remove groups
   
   # EHIsigi, EHIaccli y EHF 
   data <- data %>%
@@ -273,14 +273,14 @@ EHF <- function(data, tmax_col, tmin_col, date_col, p_col, n_days = 3, period_da
 }
 
 
-# Iteración para `n_days`
+# Iteration for `n_days`
 n_days_list <- c(2, 3, 4)
 
 for (n_days in n_days_list) {
   hw_data <- hw_data %>%
     EHF(tmax_col = "tmax", tmin_col = "tmin", date_col = "date", p_col = "p95_tmax", n_days = n_days) %>%
     
-    # Calcular binarias para `tad` y `tmax`
+    # Calculate binary variables for `tad` and `tmax`
     mutate(
       !!paste0("HW_EHF_tad_", n_days, "d") := if_else(EHF_tad > 0, 1, 0),
       !!paste0("HW_EHF_tmax_", n_days, "d") := if_else(EHF_tmax > 0, 1, 0)

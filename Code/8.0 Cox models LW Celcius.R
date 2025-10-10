@@ -52,10 +52,10 @@ fit_cox_model <- function(dependent, predictor, data) {
                               "age_group_dad + educ_group_dad + job_group_dad +",
                               "factor(year_nac) + vulnerability"))
   
-  # Ajuste del modelo de Cox usando el argumento `data`
+  # Fit Cox model using `data` argument
   model_fit <- coxph(formula, data = data)
   
-  # Extraer resultados con tidy
+  # Extract results with tidy
   results <- broom::tidy(model_fit, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
     mutate(estimate = round(estimate, 3), 
            std.error = round(std.error, 3),
@@ -64,13 +64,13 @@ fit_cox_model <- function(dependent, predictor, data) {
            conf.low = round(conf.low, 3),
            conf.high = round(conf.high, 3)) %>%
     select(term, estimate, std.error, statistic, p.value, conf.low, conf.high) %>%
-    mutate(dependent_var = dependent, predictor = predictor)  # Añadir columnas de identificación
+    mutate(dependent_var = dependent, predictor = predictor)  # Add identification columns
   return(results)
 
   rm(model_fit); gc()
 }
 
-# Iterar sobre las combinaciones de dependientes y predictores
+# Iterate over combinations of dependent and predictor variables
 plan(multisession, workers = parallel::detectCores() - 4)
 options(future.globals.maxSize = 1.5 * 1024^3)  # 1.5 GB
 

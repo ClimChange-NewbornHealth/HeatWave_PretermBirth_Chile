@@ -270,7 +270,7 @@ ggplot(data_plot, aes(x = year_nac, y = value, color = variable, group = variabl
   labs(
     title = NULL,
     x = NULL,
-    y = "Olas de calor promedio",
+    y = "Mean heat waves",
     color = "HW Definition"
   ) +
   facet_wrap(~name_com, ncol = 5, scales = "free") +
@@ -297,7 +297,7 @@ comunas <- unique(hw_data$name_com)
 
 for (comuna in comunas) {
   
-  # Filtrar los datos para la comuna actual
+  # Filter data for current municipality
   hw_time <- hw_data %>% 
     filter(name_com == comuna) %>% 
     filter(year_month %in% c("11-2020", "12-2020", "01-2021", "02-2021", "03-2021")) %>% 
@@ -305,12 +305,12 @@ for (comuna in comunas) {
     summarise(tmax_mean = mean(tmax)) %>% 
     ungroup()
   
-  # Calcular percentiles para la comuna actual
+  # Calculate percentiles for current municipality
   p90 <- quantile(hw_time$tmax_mean, probs = 0.90, na.rm = TRUE)
   p95 <- quantile(hw_time$tmax_mean, probs = 0.95, na.rm = TRUE)
   c30 <- 30
   
-  # Gráfico de temperaturas máximas
+  # Graph of maximum temperatures
   f1 <- hw_time %>% 
     ggplot(aes(y = tmax_mean, x = date)) +
     geom_line(color = "#09557f", alpha = 0.6, size = 0.4) +
@@ -321,7 +321,7 @@ for (comuna in comunas) {
     scale_x_date(date_labels = "%Y-%m", date_breaks = "1 month", expand = c(0.03, 0.03)) + 
     scale_linetype_manual(values = c("solid", "twodash", "longdash"),
                           guide = guide_legend(reverse = FALSE, nrow = 1)) +
-    labs(y = "Temperatura Máxima (ºC)", x = NULL, linetype = NULL, title = NULL) +
+    labs(y = "Maximum Temperature (ºC)", x = NULL, linetype = NULL, title = NULL) +
     theme_light() +
     theme(legend.position = "top",
           legend.margin = margin(c(0.05, 0.05, 0.05, 0.05)),
@@ -329,11 +329,11 @@ for (comuna in comunas) {
           plot.title = element_text(size = 10),
           text = element_text(size = 10))
   
-  # Agregar filtro para el cálculo de olas de calor por verano
+  # Add filter for heat wave calculation by summer
   count_heatwaves <- function(data, threshold_col) {
-    # Aplicar run-length encoding para identificar secuencias de olas de calor
+    # Apply run-length encoding to identify heat wave sequences
     rle_result <- rle(data[[threshold_col]])
-    # Contar cuántas secuencias de al menos 3 días consecutivos (valor 1) hay
+    # Count how many sequences of at least 3 consecutive days (value 1) there are
     num_heatwaves <- sum(rle_result$values == 1 & rle_result$lengths >= 3)
     return(num_heatwaves)
   }
@@ -356,16 +356,16 @@ for (comuna in comunas) {
                  values_to = "value") %>% 
     filter(summer_year >= 1980)
   
-  # Gráfico de olas de calor por verano
+  # Graph of heat waves by summer
   f2 <- hw_sum_time %>% 
     ggplot(aes(y = value, x = summer_year, fill = hw)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_x_continuous(expand = c(0.03, 0.03)) +
     scale_fill_manual(values = c("#f39c12", "#e67e22", "#d35400"),
-                      name = "Exposición:",
-                      labels = c("30º x 3 días", "P90 x 3 días", "P95 x 3 días")) +
+                      name = "Exposure:",
+                      labels = c("30º x 3 days", "P90 x 3 days", "P95 x 3 days")) +
     scale_y_continuous(limits = c(0, 30)) +
-    labs(y = "Número de olas de calor", x = NULL, linetype = NULL, title = NULL) +
+    labs(y = "Number of heat waves", x = NULL, linetype = NULL, title = NULL) +
     theme_light() +
     theme(legend.position = "top",
           legend.margin = margin(c(0.05, 0.05, 0.05, 0.05)),
@@ -374,10 +374,10 @@ for (comuna in comunas) {
           plot.title = element_text(size = 10),
           text = element_text(size = 10))
   
-  # Combinar los gráficos
+  # Combine plots
   combined_plot <- f2 | f1
   
-  # Guardar el gráfico
+  # Save plot
   ggsave(filename = paste0("Output/", "Descriptives/", "HW_zip/", "comuna_", comuna, "_HW_last_summer_resume.png"), 
          plot = combined_plot,
          res = 300,
@@ -844,7 +844,7 @@ hws_long <- hws_long %>%
     "hw_p90_2d", "hw_p90_3d", "hw_p90_4d",
     "hw_p95_2d", "hw_p95_3d", "hw_p95_4d",
     "hw_p99_2d", "hw_p99_3d", "hw_p99_4d",
-    "hw_ehf_2d", "hw_ehf_3d", "hw_ehf_4d"  # Mover EHF al final
+    "hw_ehf_2d", "hw_ehf_3d", "hw_ehf_4d"  # Move EHF to the end
   )))
 
 glimpse(hws_long)
@@ -901,8 +901,8 @@ h_service <- rio::import("Data/Input/Health_service_municipality.xlsx") %>% sele
 heat_table <- bw_data_lw %>% 
   mutate(
     summer_year = case_when(
-      month_end_week %in% c(11, 12) ~ paste0(year_end_week),               # Noviembre y Diciembre del mismo año
-      month_end_week %in% c(1, 2, 3) ~ paste0(year_end_week - 1),          # Enero, Febrero y Marzo del año siguiente
+      month_end_week %in% c(11, 12) ~ paste0(year_end_week),               # November and December of same year
+      month_end_week %in% c(1, 2, 3) ~ paste0(year_end_week - 1),          # January, February and March of following year
       TRUE ~ NA_character_                                                 
     )) %>% 
   group_by(com, name_com, summer_year) %>% 
@@ -917,17 +917,17 @@ heat_table <- bw_data_lw %>%
   filter(summer_year != "2020") %>% 
   left_join(h_service, by="com") %>% 
     mutate(
-      name_com = fct_reorder(name_com, com), # Ordenar comunas por código postal
-      service = factor(service, levels = c("North", "Central", "East", "Southeast", "South", "West")) # Orden geográfico
+      name_com = fct_reorder(name_com, com), # Sort municipalities by postal code
+      service = factor(service, levels = c("North", "Central", "East", "Southeast", "South", "West")) # Geographic order
     )
 
 g1 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_30C_3d_count)) +
   geom_tile(colour = "white") +
   scale_fill_gradientn(
     colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
-    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
-    breaks = 0:7, # Valores discretos en la leyenda
-    limits = c(0, 7), # Límite del rango
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescale values
+    breaks = 0:7, # Discrete values in legend
+    limits = c(0, 7), # Range limit
     guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
   ) +
   labs(x = NULL, y = "Municipality", 
@@ -960,9 +960,9 @@ g2 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_p90_3d_cou
   geom_tile(colour = "white") +
   scale_fill_gradientn(
     colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
-    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
-    breaks = 0:7, # Valores discretos en la leyenda
-    limits = c(0, 7), # Límite del rango
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescale values
+    breaks = 0:7, # Discrete values in legend
+    limits = c(0, 7), # Range limit
     guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
   ) +
   labs(x = NULL, y = "Municipality", 
@@ -995,9 +995,9 @@ g3 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_p95_3d_cou
   geom_tile(colour = "white") +
   scale_fill_gradientn(
     colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
-    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
-    breaks = 0:7, # Valores discretos en la leyenda
-    limits = c(0, 7), # Límite del rango
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescale values
+    breaks = 0:7, # Discrete values in legend
+    limits = c(0, 7), # Range limit
     guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
   ) +
   labs(x = NULL, y = "Municipality", 
@@ -1031,9 +1031,9 @@ g4 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_p99_3d_cou
   geom_tile(colour = "white") +
   scale_fill_gradientn(
     colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
-    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
-    breaks = 0:7, # Valores discretos en la leyenda
-    limits = c(0, 7), # Límite del rango
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescale values
+    breaks = 0:7, # Discrete values in legend
+    limits = c(0, 7), # Range limit
     guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
   ) +
   labs(x = NULL, y = "Municipality", 
@@ -1067,9 +1067,9 @@ g5 <- ggplot(heat_table, aes(x = summer_year, y = name_com, fill = HW_EHF_TAD_3d
   geom_tile(colour = "white") +
   scale_fill_gradientn(
     colours = c("white", "#FFE4B2", "#FFC56C", "#FF9E40", "#FF7800", "#E65C00", "#CC4000", "#B23000"), 
-    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescala los valores
-    breaks = 0:7, # Valores discretos en la leyenda
-    limits = c(0, 7), # Límite del rango
+    values = scales::rescale(c(0, 1, 2, 3, 4, 5, 6, 7)), # Rescale values
+    breaks = 0:7, # Discrete values in legend
+    limits = c(0, 7), # Range limit
     guide = guide_colorbar(title = "Number of Heatwaves", barwidth = 15, barheight = 0.5)
   ) +
   labs(x = NULL, y = "Municipality", 

@@ -88,24 +88,24 @@ births <- births %>%
   drop_na(date_nac) %>% 
   {
     cat("Observaciones después de drop_na(date_nac):", nrow(.), "\nMissing:", start_count - nrow(.), "\n") # NA: 41
-    start_count <<- nrow(.)  # Actualiza el contador de filas
-    .  # Retorna el dataset para la siguiente operación
+    start_count <<- nrow(.)  # Updates the row counter
+    .  # Returns the dataset for the next operation
   } 
 
 births <- births %>%     
   drop_na(weeks) %>%  
   {
     cat("Observaciones después de drop_na(semanas):", nrow(.), "\nMissing:", start_count - nrow(.), "\n") # NA 2695
-    start_count <<- nrow(.)  # Actualiza el contador de filas
-    .  # Retorna el dataset para la siguiente operación
+    start_count <<- nrow(.)  # Updates the row counter
+    .  # Returns the dataset for the next operation
   } 
 
 births <- births %>%
   drop_na(comuna) %>%  
   {
     cat("Observaciones después de drop_na(comuna):", nrow(.), "\nMissing:", start_count - nrow(.), "\n") # NA 0
-    start_count <<- nrow(.)  # Actualiza el contador de filas
-    .  # Retorna el dataset para la siguiente operación
+    start_count <<- nrow(.)  # Updates the row counter
+    .  # Returns the dataset for the next operation
   } 
 
 nrow(births)
@@ -156,24 +156,24 @@ births <- births %>%
   filter(age_mom>=12 & age_mom<=50) %>%  
       {
         cat("Observaciones después de filter:", nrow(.), "\nMissing:", start_count - nrow(.), "\n") # NA: 641
-        start_count <<- nrow(.)  # Actualiza el contador de filas
-        .  # Retorna el dataset para la siguiente operación
+        start_count <<- nrow(.)  # Updates the row counter
+        .  # Returns the dataset for the next operation
       } 
 
 births <- births %>%
   filter(weeks >= 28) %>% 
     {
       cat("Observaciones después de filter:", nrow(.), "\nMissing:", start_count - nrow(.), "\n") # NA: 11641
-      start_count <<- nrow(.)  # Actualiza el contador de filas
-      .  # Retorna el dataset para la siguiente operación
+      start_count <<- nrow(.)  # Updates the row counter
+      .  # Returns the dataset for the next operation
     } 
 
 births <- births %>%
   filter(tipo_parto==1) %>% 
     {
       cat("Observaciones después de filter", nrow(.), "\nMissing:", start_count - nrow(.), "\n") # NA: 59940
-      start_count <<- nrow(.)  # Actualiza el contador de filas
-      .  # Retorna el dataset para la siguiente operación
+      start_count <<- nrow(.)  # Updates the row counter
+      .  # Returns the dataset for the next operation
     } 
 
 # Edit covariates

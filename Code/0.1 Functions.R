@@ -12,7 +12,7 @@ descriptives <- function(x, data){
               P5 = round(quantile({{ x }}, probs = 0.05, na.rm = TRUE), 3),
               P10 = round(quantile({{ x }}, probs = 0.1, na.rm = TRUE), 3),
               P25 = round(quantile({{ x }}, probs = 0.25, na.rm = TRUE), 3),
-              P50 = round(quantile({{ x }}, probs = 0.50, na.rm = TRUE), 3), # Mediana
+              P50 = round(quantile({{ x }}, probs = 0.50, na.rm = TRUE), 3), # Median
               P75 = round(quantile({{ x }}, probs = 0.75, na.rm = TRUE), 3),
               P90 = round(quantile({{ x }}, probs = 0.9, na.rm = TRUE), 3),
               P95 = round(quantile({{ x }}, probs = 0.95, na.rm = TRUE), 3),
@@ -25,7 +25,7 @@ descriptives <- function(x, data){
     relocate(Variable)
 }
 
-## Construcción de variables
+## Variable construction
 
 make_dummies <- function(v, prefix = '') {
   s <- sort(unique(v))

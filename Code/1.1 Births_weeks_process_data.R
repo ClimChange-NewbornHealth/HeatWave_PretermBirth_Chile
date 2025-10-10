@@ -91,7 +91,7 @@ ggsave(filename = paste0("Output/", "Descriptives/", "Preterm_trends", ".png"), 
        scaling = 0.90,
        device = ragg::agg_png)
 
-# Podrían haber nacido en el úlimo mes 30/04, pero no última semana -> fecha de cohorte 07/04. Todo el resto fuera. 
+# Could have been born in the last month 30/04, but not last week -> cohort date 07/04. All the rest outside. 
 #rm(births_rm1991)
 
 ### 2. Expand gestational weeks  -----

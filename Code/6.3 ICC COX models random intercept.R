@@ -78,7 +78,7 @@ tic()
 model_fit_wre <- coxph(formula, data = bw_data_lw) 
 toc() # 188.009 sec ~ 3 min 
 
-# Comparision models 
+# Comparison models 
 AIC(model_fit) # 1578467
 AIC(model_fit_wre) # 1578923
 

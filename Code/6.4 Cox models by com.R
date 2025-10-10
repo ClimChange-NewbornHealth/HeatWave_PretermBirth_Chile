@@ -20,11 +20,11 @@ glimpse(bw_data_lw)
 
 ## PR COX Models by com ---- 
 
-# Eliminar datos faltantes
+# Remove missing data
 bw_data_lw <- bw_data_lw %>% drop_na()
 
-# Variables dependientes y predictoras
-dependent_vars <- c("birth_preterm")  # Solo una variable dependiente
+# Dependent and predictor variables
+dependent_vars <- c("birth_preterm")  # Only one dependent variable
 heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin", 
                    "HW_31C_2d_bin", "HW_31C_3d_bin", "HW_31C_4d_bin", 
                    "HW_32C_2d_bin", "HW_32C_3d_bin", "HW_32C_4d_bin", 
@@ -35,17 +35,17 @@ heatwave_vars <- c("HW_30C_2d_bin", "HW_30C_3d_bin", "HW_30C_4d_bin",
                    "HW_p99_2d_bin", "HW_p99_3d_bin", "HW_p99_4d_bin", 
                    "HW_EHF_2d_bin", "HW_EHF_3d_bin", "HW_EHF_4d_bin")
 
-# Función para ajustar el modelo por comuna
+# Function to fit model by municipality
 fit_cox_model_by_comuna <- function(data, dependent, predictor) {
   formula <- as.formula(paste("Surv(weeks, ", dependent, ") ~ ", predictor, 
                               "+ sex + age_group_mom + educ_group_mom + job_group_mom +",
                               "age_group_dad + educ_group_dad + job_group_dad +",
                               "factor(year_nac)"))
   
-  # Ajustar el modelo de Cox
+  # Fit Cox model
   model_fit <- coxph(formula, data = data)
   
-  # Extraer resultados en formato legible
+  # Extract results in readable format
   results <- tidy(model_fit, exponentiate = TRUE, conf.int = TRUE, conf.level = 0.95) %>%
     mutate(estimate = round(estimate, 3), 
            std.error = round(std.error, 3),
@@ -54,13 +54,13 @@ fit_cox_model_by_comuna <- function(data, dependent, predictor) {
            conf.low = round(conf.low, 3),
            conf.high = round(conf.high, 3)) %>%
     select(term, estimate, std.error, statistic, p.value, conf.low, conf.high) %>%
-    mutate(dependent_var = dependent, predictor = predictor)  # Añadir columnas identificativas
+    mutate(dependent_var = dependent, predictor = predictor)  # Add identification columns
   
   return(results)
 }
 
 tic()
-# Iterar sobre comunas y ajustar modelos
+# Iterate over municipalities and fit models
 results_by_comuna <- bw_data_lw %>%
   #filter(name_com %in% c("Cerrillos", "Cerrillos", "Conchali")) %>% 
   group_split(name_com) %>%  
