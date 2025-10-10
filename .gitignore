@@ -7,7 +7,7 @@
 */old
 /Data
 /Docs
-/Output
+#/Output
 .DS_Store
 .vscode
 /Paper
