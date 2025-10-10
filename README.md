@@ -1,6 +1,6 @@
 # Heat Beyond Percentiles: Exploring Risk of Preterm Birth in Santiago, Chile (1992-2020) Using a Novel Metric :sunny: :baby:
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/855782998.svg)](https://doi.org/10.5281/zenodo.17316761)
 ![GitHub Repo stars](https://img.shields.io/github/stars/ClimChange-NewbornHealth/HeatWave_PretermBirth_Chile)
 ![GitHub watchers](https://img.shields.io/github/watchers/ClimChange-NewbornHealth/HeatWave_PretermBirth_Chile)
 ![GitHub forks](https://img.shields.io/github/forks/ClimChange-NewbornHealth/HeatWave_PretermBirth_Chile)
