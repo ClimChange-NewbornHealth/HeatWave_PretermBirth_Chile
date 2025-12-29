@@ -27,7 +27,7 @@
 
 ## :pushpin: Publication
 
-**Status**: *Currently under review*
+Blanco, E., Conejeros, J.D., González-Reyes, Á. et al. Heat beyond percentiles: exploring preterm birth risks in Santiago, Chile (1991–2019). Int Arch Occup Environ Health 99, 5 (2026). <https://doi.org/10.1007/s00420-025-02196-x>
 
 ---
 
